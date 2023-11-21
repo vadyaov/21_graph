@@ -7,7 +7,12 @@ int main() {
   graph.LoadGraphFromFile("./examples/graph_0.txt");
   std::cout << graph << std::endl;
 
-  std::cout << graph[10][9] << std::endl;
+  if (graph.Directed())
+    std::cout << "This graph is directed\n";
+  else
+    std::cout << "This graph is undirected\n";
+
+  graph.ExportGraphToDot("graphname.dot");
 
   return 0;
 }

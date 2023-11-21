@@ -18,18 +18,20 @@ class Graph {
   public:
     Graph() : adjacent_{}, size{0} {}
 
+    // loading graph from file with adjacent matrix
     void LoadGraphFromFile(const std::string& filename);
-    /* void ExportGraphToDot(const std::string& filename) const; */
 
+    // exporting graph to .gv (.dot) file
+    void ExportGraphToDot(const std::string& filename) const;
 
-
-
+    // only directed or undirected graphs
+    bool Directed() const noexcept;
 
     friend std::ostream& operator<<(std::ostream& os, const Graph& g);
 
     // just for fun, allows to do graph[i][j] :)
     ProxyRow operator[](int row) {
-      return adjacent_.data() + row * size; 
+      return adjacent_.data() + row * size; // implicit cast to ProxyRow(int *)
     }
 
   private:
