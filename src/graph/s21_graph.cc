@@ -29,7 +29,7 @@ void Graph::ExportGraphToDot(const std::string& filename) const {
 
   const bool directed = Directed();
   const std::string tab(4, ' ');
-  const std::string connection = directed ? "->" : "--";
+  const std::string connection = directed ? " -> " : " -- ";
   std::string graph_title = (directed ? "digraph " : "graph ") +
     filename.substr(0, filename.find_first_of('.'));
 
@@ -37,9 +37,24 @@ void Graph::ExportGraphToDot(const std::string& filename) const {
 
   ostrm << graph_title << " {\n";
 
-  ostrm << tab << "here the main logic\n";
+  std::size_t last = 0;
+  for (std::size_t i = 0; i < size; ++i) {
+    for (std::size_t j = directed ? 0 : i; j < size; ++j) {
+      if (adjacent_[i * size + j] != 0) {
+        if (i + 1 == last) {
+          ostrm << connection << j + 1;
+        } else {
+          if (last) // to not put \n before the first row ('last' value is still zero)
+            ostrm << std::endl;
+          ostrm << tab << i + 1 << connection << j + 1;
+        }
 
-  ostrm << "}\n";
+        last = j + 1;
+      }
+    }
+  }
+
+  ostrm << "\n}\n";
 
   ostrm.close();
 }

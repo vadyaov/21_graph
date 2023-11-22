@@ -35,8 +35,8 @@ class Graph {
     }
 
   private:
-    std::vector<int> adjacent_;  // adjacent matrix, mb better use S21Maztrix class ?
-    std::size_t size;            // sqrt
+    std::vector<int> adjacent_;  // adjacent matrix
+    std::size_t size;            // vertex number
 };
 
 
