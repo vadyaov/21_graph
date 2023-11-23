@@ -18,6 +18,8 @@ void Graph::LoadGraphFromFile(const std::string& filename) {
     istrm >> adjacent_[i];
   }
 
+  directed = Directed();
+
   istrm.close();
 }
 
@@ -27,13 +29,10 @@ void Graph::ExportGraphToDot(const std::string& filename) const {
   std::ofstream ostrm;
   ostrm.open(filename, std::ios::out);
 
-  const bool directed = Directed();
   const std::string tab(4, ' ');
   const std::string connection = directed ? " -> " : " -- ";
   std::string graph_title = (directed ? "digraph " : "graph ") +
     filename.substr(0, filename.find_first_of('.'));
-
-  /* what if loops ? */
 
   ostrm << graph_title << " {\n";
 
@@ -63,16 +62,18 @@ bool Graph::Directed() const noexcept {
 
   for (std::size_t i = 0; i < size; ++i) {
     for (std::size_t j = 0; j < size; ++j) {
-      if (i == j) continue; // think about this: what if [i][j] != 0 ? --> loop
 
-      // only allows to detect directed and undirected graphs (not mixed)
-      if (adjacent_[i * size + j] != adjacent_[j * size + i])
+        // only allows to detect directed and undirected graphs (not mixed)
+      if (i != j && adjacent_[i * size + j] != adjacent_[j * size + i])
         return true;
-
     }
   }
 
   return false;
+}
+
+bool Graph::IsDirect() const noexcept {
+  return directed;
 }
 
 std::ostream& operator<<(std::ostream& os, const Graph& g) {

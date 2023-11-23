@@ -16,17 +16,17 @@ class Graph {
     };
 
   public:
-    Graph() : adjacent_{}, size{0} {}
-
     // loading graph from file with adjacent matrix
     void LoadGraphFromFile(const std::string& filename);
 
     // exporting graph to .gv (.dot) file
     void ExportGraphToDot(const std::string& filename) const;
 
-    // only directed or undirected graphs
-    bool Directed() const noexcept;
+    // what if called on empty graph ?
+    bool IsDirect() const noexcept;
 
+
+  public:
     friend std::ostream& operator<<(std::ostream& os, const Graph& g);
 
     // just for fun, allows to do graph[i][j] :)
@@ -35,8 +35,13 @@ class Graph {
     }
 
   private:
+    // only directed or undirected graphs
+    bool Directed() const noexcept;
+
+  private:
     std::vector<int> adjacent_;  // adjacent matrix
     std::size_t size;            // vertex number
+    bool directed;
 };
 
 
