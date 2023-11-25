@@ -76,6 +76,14 @@ bool Graph::IsDirect() const noexcept {
   return directed;
 }
 
+bool Graph::Empty() const noexcept {
+  return size == 0 || adjacent_.empty();
+}
+
+std::size_t Graph::Size() const noexcept {
+  return size;
+}
+
 std::ostream& operator<<(std::ostream& os, const Graph& g) {
   for (std::size_t i = 0, j = 1; i < g.size * g.size; ++i, ++j) {
     os << std::setw(4);
