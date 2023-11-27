@@ -1,9 +1,7 @@
 #include "s21_graph_algorithms.h"
 
-#include <iostream>
+/* #include <functional> */
 #include <limits>
-#include <functional>
-#include <set>
 
 #include "stack.h"
 #include "queue.h"
@@ -77,39 +75,69 @@ std::vector<int> GraphAlgorithms::BreadthFirstSearch(const Graph &graph, int s) 
   return BreadthDepthInterface<s21::queue<int>>(graph, s);
 }
 
+int ExtractMin(std::vector<int>& Q, const std::vector<int>& d) {
+  int min {d[0]};
+  int min_index {0};
+
+  for (std::size_t i = 0; i < Q.size(); ++i) {
+    if (d[Q[i]] < min) {
+      min = d[Q[i]];
+      min_index = i;
+    }
+  }
+  std::cout << "MIN_INDEX = " << min_index << std::endl;
+
+  int vertex = Q[min_index];
+  Q.erase(Q.begin() + min_index);
+  return vertex;
+}
+
+// need to improve a lot
+// 1. check s and f
+// 2. check for negative weights
+// 3. Q and d are bad implementation of priority queue
 std::size_t GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph,
                                                               int s, int f) {
-  // d[v] - верхняя граница веса, которым обладает кратчайший путь из истока
-  // v1 в вершину v2. d[v] - оценка кратчайшего пути
+  std::vector<int> Q; // vertex
   std::vector<int> d(graph.Size(), std::numeric_limits<int>::max());
-  /* std::vector<int> p(graph.Size(), -1); */
+  for (std::size_t i = 0; i < graph.Size(); ++i)
+    Q.push_back(i);
+
   d[s - 1] = 0;
-
   /* std::vector<int> S; */
-  std::set<std::pair<int, int>> Q; // distance, vertex
-  // в начале будут наименьшие ключи, yes ?
-  Q.emplace(0, s - 1);
-
 
   while (!Q.empty()) {
-    int u = Q.begin()->second;
+    std::cout << "Q:\n";
+    for (int i : Q)
+      std::cout << i << ' ';
+    std::cout << std::endl;
+
+    std::cout << "d:\n";
+    for (int i : d)
+      std::cout << i << ' ';
+    std::cout << std::endl;
+
+
+    int u = ExtractMin(Q, d);
+    std::cout << "u = " << u << std::endl;
     /* S.push_back(u); */
-    Q.erase(Q.begin());
+    if (d[u] == std::numeric_limits<int>::max()) continue;
 
     for (std::size_t j = 0; j < graph.Size(); ++j) {
-      int w = graph[u - 1][j];
+      int w = graph[u][j];
       if (w != 0) {
         // relax edge
-        if (d[j - 1] > d[u - 1] + w) {
-          d[j - 1] = d[u - 1] + w;
+        if (d[j] > d[u] + w) {
+          d[j] = d[u] + w;
           /* p[j - 1] = vertex - 1; */
-          Q.emplace(d[j - 1], j - 1);
         }
       }
 
     }
   }
 
+  std::cout << std::endl;
+  std::cout << std::endl;
   for (auto i : d)
     std::cout << i << ' ';
   std::cout << std::endl;
