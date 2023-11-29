@@ -1,7 +1,7 @@
 #include "s21_graph_algorithms.h"
 
-/* #include <functional> */
 #include <limits>
+#include <queue>
 
 #include "stack.h"
 #include "queue.h"
@@ -75,72 +75,63 @@ std::vector<int> GraphAlgorithms::BreadthFirstSearch(const Graph &graph, int s) 
   return BreadthDepthInterface<s21::queue<int>>(graph, s);
 }
 
-int ExtractMin(std::vector<int>& Q, const std::vector<int>& d) {
-  int min {d[0]};
-  int min_index {0};
-
-  for (std::size_t i = 0; i < Q.size(); ++i) {
-    if (d[Q[i]] < min) {
-      min = d[Q[i]];
-      min_index = i;
-    }
-  }
-  std::cout << "MIN_INDEX = " << min_index << std::endl;
-
-  int vertex = Q[min_index];
-  Q.erase(Q.begin() + min_index);
-  return vertex;
-}
-
-// need to improve a lot
-// 1. check s and f
-// 2. check for negative weights
-// 3. Q and d are bad implementation of priority queue
-std::size_t GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph,
+int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph,
                                                               int s, int f) {
-  std::vector<int> Q; // vertex
-  std::vector<int> d(graph.Size(), std::numeric_limits<int>::max());
-  for (std::size_t i = 0; i < graph.Size(); ++i)
-    Q.push_back(i);
+  int sz = (int) graph.Size();
+  if (s < 1 || s > sz - 1 || f < 1 || f > sz - 1)
+    throw std::invalid_argument("Vertex is out of boundary");
 
+  std::vector<int> d(sz, std::numeric_limits<int>::max());
   d[s - 1] = 0;
-  /* std::vector<int> S; */
 
-  while (!Q.empty()) {
-    std::cout << "Q:\n";
-    for (int i : Q)
-      std::cout << i << ' ';
-    std::cout << std::endl;
+  std::priority_queue<std::pair<int, int>> q;
+  q.push(std::make_pair(0, s - 1));
 
-    std::cout << "d:\n";
-    for (int i : d)
-      std::cout << i << ' ';
-    std::cout << std::endl;
+  while (!q.empty()) {
+    int v = q.top().second, cur_d = -q.top().first;
+    q.pop();
+    if (cur_d > d[v]) continue;
 
-
-    int u = ExtractMin(Q, d);
-    std::cout << "u = " << u << std::endl;
-    /* S.push_back(u); */
-    if (d[u] == std::numeric_limits<int>::max()) continue;
-
-    for (std::size_t j = 0; j < graph.Size(); ++j) {
-      int w = graph[u][j];
-      if (w != 0) {
-        // relax edge
-        if (d[j] > d[u] + w) {
-          d[j] = d[u] + w;
-          /* p[j - 1] = vertex - 1; */
+    for (int j = 0; j < sz; ++j) {
+      int w = graph[v][j];
+      if (w != 0)
+        if (d[j] > d[v] + w) {
+          d[j] = d[v] + w;
+          q.push(std::make_pair(-d[j], j));
         }
-      }
-
     }
   }
-
-  std::cout << std::endl;
-  std::cout << std::endl;
-  for (auto i : d)
-    std::cout << i << ' ';
-  std::cout << std::endl;
 
   return d[f - 1];
+}
+
+std::vector<int> GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
+  const int sz = graph.Size();
+  const int max_int = std::numeric_limits<int>::max();
+
+  std::vector<int> d(sz * sz, max_int);
+  for (int i = 0; i < sz; ++i) {
+    for (int j = 0; j < sz; ++j) {
+      if (i == j)
+        d[i * sz + j] = 0; // критично важно для работы алгоритма
+      else if (graph[i][j])
+        d[i * sz + j] = graph[i][j];
+    }
+  }
+
+  /* std::cout << std::endl; */
+  /* for (int i = 0; i < sz; ++i) { */
+  /*   for (int j = 0; j < sz; ++j) { */
+  /*     std::cout << d[i * sz + j] << ' '; */
+  /*   } */
+  /*   std::cout << std::endl; */
+  /* } */
+
+  for (int k = 0; k < sz; ++k)
+    for (int i = 0; i < sz; ++ i)
+      for (int j = 0; j < sz; ++j)
+        if (d[i * sz + k] < max_int && d[k * sz + j] < max_int)
+          d[i * sz + j] = std::min(d[i * sz + j], d[i * sz + k] + d[k * sz + j]);
+
+  return d;
 }
