@@ -16,7 +16,10 @@ class GraphAlgorithms {
     static int GetShortestPathBetweenVertices(const Graph& graph, int v1, int v2);
 
     // Floyd-Warshall algo O(V^3)
-    static std::vector<int> GetShortestPathsBetweenAllVertices(const Graph& graph);
+    static std::vector<std::vector<int>>
+      GetShortestPathsBetweenAllVertices(const Graph& graph);
+
+    static std::vector<int> GetLeastSpanningTree(const Graph& graph);
 };
 
 #endif // S21_GRAPH_ALGORITHMS_H_

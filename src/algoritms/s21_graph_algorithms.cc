@@ -77,7 +77,7 @@ std::vector<int> GraphAlgorithms::BreadthFirstSearch(const Graph &graph, int s) 
 
 int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph,
                                                               int s, int f) {
-  int sz = (int) graph.Size();
+  const int sz = (int) graph.Size();
   if (s < 1 || s > sz - 1 || f < 1 || f > sz - 1)
     throw std::invalid_argument("Vertex is out of boundary");
 
@@ -105,33 +105,37 @@ int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph,
   return d[f - 1];
 }
 
-std::vector<int> GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
+std::vector<std::vector<int>>
+GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
   const int sz = graph.Size();
   const int max_int = std::numeric_limits<int>::max();
 
-  std::vector<int> d(sz * sz, max_int);
-  for (int i = 0; i < sz; ++i) {
-    for (int j = 0; j < sz; ++j) {
-      if (i == j)
-        d[i * sz + j] = 0; // критично важно для работы алгоритма
-      else if (graph[i][j])
-        d[i * sz + j] = graph[i][j];
-    }
-  }
+  std::vector<std::vector<int>> d(sz, std::vector<int>(sz, max_int));
+  for (int i = 0; i < sz; ++i)
+    for (int j = 0; j < sz; ++j)
+      if (graph[i][j]) d[i][j] = graph[i][j];
 
-  /* std::cout << std::endl; */
-  /* for (int i = 0; i < sz; ++i) { */
-  /*   for (int j = 0; j < sz; ++j) { */
-  /*     std::cout << d[i * sz + j] << ' '; */
-  /*   } */
-  /*   std::cout << std::endl; */
-  /* } */
+  for (int i = 0; i < sz; ++i)
+    d[i][i] = 0;
 
   for (int k = 0; k < sz; ++k)
-    for (int i = 0; i < sz; ++ i)
+    for (int i = 0; i < sz; ++i)
       for (int j = 0; j < sz; ++j)
-        if (d[i * sz + k] < max_int && d[k * sz + j] < max_int)
-          d[i * sz + j] = std::min(d[i * sz + j], d[i * sz + k] + d[k * sz + j]);
+        if (d[i][k] < max_int && d[k][j] < max_int)
+          d[i][j] = std::min(d[i][j], d[i][k] + d[k][j]);
 
   return d;
+}
+
+std::vector<int> GetLeastSpanningTree(const Graph& graph) {
+  const int sz = (int) graph.Size();
+  std::vector<int> adj(sz, 0);
+
+  int weight = 0;
+
+  for (int i = 0; i < sz; ++i)
+    for (int j = 0; j < sz; ++j)
+      if (graph[i][j]
+
+  return adj;
 }
