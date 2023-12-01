@@ -127,15 +127,46 @@ GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
   return d;
 }
 
-std::vector<int> GetLeastSpanningTree(const Graph& graph) {
+// вроде работает, только теперь надо возвращать матрицу смежности для остова
+std::vector<int> GraphAlgorithms::GetLeastSpanningTree(const Graph& graph) {
   const int sz = (int) graph.Size();
-  std::vector<int> adj(sz, 0);
+  const int max_int = std::numeric_limits<int>::max();
+  std::vector<int> A;
 
-  int weight = 0;
+  std::vector<int> key(sz, max_int);
+  key[0] = 0;  // starting from vertex No.0
 
-  for (int i = 0; i < sz; ++i)
-    for (int j = 0; j < sz; ++j)
-      if (graph[i][j]
+  /* std::vector<int> p(sz, -1); // parents */
 
-  return adj;
+  std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>,
+    std::greater<std::pair<int, int>>> Q;
+  Q.push(std::make_pair(key[0], 0));
+
+  while (!Q.empty()) {
+    int u = Q.top().second;
+    std::cout << "size = " << Q.size() << "; " << Q.top().first << " " << Q.top().second << std::endl;
+    Q.pop();
+
+    if (std::find(A.begin(), A.end(), u) != A.end()) continue;
+    A.push_back(u);
+
+    std::cout << "A: ";
+    for(int v : A)
+      std::cout << v << " ";
+    std::cout << std::endl;
+
+    for (int j = 0; j != sz; ++j) {
+      if (graph[u][j] != 0) {
+        if (std::find(A.begin(), A.end(), j) == A.end() && graph[u][j] < key[j]) {
+          key[j] = graph[u][j];
+          std::cout << "pushing " << j << " with " << key[j] << std::endl;
+          Q.push(std::make_pair(key[j], j));
+        }
+      }
+    }
+  }
+
+  /* std::cout << "First element iq Q: " << Q.top().first << std::endl; */
+
+  return A;
 }
