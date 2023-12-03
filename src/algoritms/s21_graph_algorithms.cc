@@ -199,101 +199,155 @@ std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
   return normalized;
 }
 
-int Roulette(const std::vector<double>& chance, const std::vector<bool>& visited) {
-  int next_point;
-  std::size_t visited_num = std::count(visited.begin(), visited.end(), true);
-  std::vector<std::pair<double, double>> intervals(chance.size() - visited_num);
+int Roulette(const std::vector<double>& chance) {
+    int next_point = -1;
+    double random_value = RandomValue();
+    /* std::cout << "RANDOMMED " << random_value << std::endl; */
+    double cumulative_probability = 0.0;
 
-  std::cout << "intervals size = " << intervals.size() << std::endl;
-  for (std::size_t i = 0, j = 0; i < chance.size(); ++i) {
-    if (chance[i] == 0) continue;
+    for (std::size_t i = 0; i < chance.size(); ++i) {
+        if (chance[i] > 0) {
+            cumulative_probability += chance[i];
+            if (random_value <= cumulative_probability) {
+                next_point = static_cast<int>(i);
+                break;
+            }
+        }
+    }
 
-    double first = (j == 0) ? 0 : intervals[j - 1].second;
-    double second = first + chance[i];
-
-    intervals[j++] = (std::make_pair(first, second));
-  }
-  
-  for (auto pair : intervals)
-    std::cout << pair.first << "-" << pair.second << std::endl;
-
-  const double random_value = RandomValue();
-  std::cout << "RANDOMMED " << random_value << std::endl;
-
-  for (std::size_t i = 0, j = 0; i != chance.size(); ++i) {
-    if (chance[i] == 0) continue;
-    if (random_value > intervals[j].first && random_value <= intervals[j++].second)
-      next_point = i;
-  }
-
-  std::cout << "next point will be " << next_point << "\n\n";
+  /* std::cout << "next point will be " << next_point << "\n\n"; */
   return next_point;
 }
 
 GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const Graph &graph) {
   TsmResult res;
   const int sz = graph.Size();
-  /* const double Q = 4.0; */
+  const int ants = sz; // число муравьев = кол-ву вершин
 
   const double alpha = 1.0;
-  const double beta = 0.0;
+  const double beta = 1.0;
+  const double Q = 0.25;
+
+  const double fero_reduce = 0.64; // 64% меток остается после испарения
 
   // матрица близости
   std::vector<std::vector<double>> dist = NormalizedGraph(graph);
   // матрица меток ( феромонов )
   std::vector<std::vector<double>> fero(sz, std::vector<double>(sz, 0.2));
 
-  /* std::cout << "Distances: \n"; */
-  /* for (int i = 0; i < sz; ++i) { */
-  /*   for (int j = 0; j < sz; ++j) */
-  /*     std::cout << dist[i][j] << " "; */
-  /*   std::cout << std::endl; */
-  /* } */
-  /* std::cout << std::endl; */
 
-  // проход муравья от каждой вершины по всем остальным
-  int start_point = 0;
-  std::vector<bool> visited(sz, false);
+  std::cout << "Distances: \n";
   for (int i = 0; i < sz; ++i) {
+    fero[i][i] = 0;
+    for (int j = 0; j < sz; ++j)
+      std::cout << dist[i][j] << " ";
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
 
-    visited[start_point] = true;
-    // матрица желаний перейти из города i в город j;
-    std::vector<double> wish(sz);
-    for (int j = 0; j != sz; ++j) {
-      wish[j] = !visited[j] * std::pow(fero[start_point][j], alpha) *
-                             std::pow(dist[start_point][j], beta);
+  for (int iter = 0; iter < 200; ++iter) {
+
+  std::cout << "FEROMONES:\n";
+  for (int i = 0; i != sz; ++i) {
+    for (int j = 0; j != sz; ++j)
+      std::cout << fero[i][j] << " ";
+    std::cout << std::endl;
+  }
+
+    // ants_path[i] - маршрут который проделал i-й муравей
+    // sz + 1, потому что муравей совершает цикл и возвращается начальную вершину
+    std::vector<TsmResult> ants_path(ants, {std::vector<int>(sz, 0), 0});
+
+    // проход муравья от каждой вершины по всем остальным
+    
+    for (int ant = 0; ant < ants; ++ant) {
+      int curr_point = ant; // вершина из которой начиает идти первый муравей
+      int prev_point = curr_point;
+
+      ants_path[ant].vertices[sz - 1] = curr_point;
+
+      std::vector<bool> visited(sz, false);
+      for (int i = 0; i < sz - 1; ++i) {
+        
+        visited[curr_point] = true;
+        ants_path[ant].vertices[i] = curr_point;
+
+        // матрица желаний перейти из города i в город j;
+        std::vector<double> wish(sz);
+        for (int j = 0; j != sz; ++j) {
+          wish[j] = !visited[j] * std::pow(fero[curr_point][j], alpha) *
+                                 std::pow(dist[curr_point][j], beta);
+        }
+
+        /* std::cout << "wishes: "; */
+        /* for (auto w : wish) */
+        /*   std::cout << w << " "; */
+        /* std::cout << std::endl; */
+
+        double wish_sum = std::accumulate(wish.begin(), wish.end(), 0.0);
+        // матрица вероятностей перейти от города i в город j
+        std::vector<double> chance(sz);
+        for (int j = 0; j != sz; ++j) {
+          chance[j] = wish[j] / wish_sum;
+        }
+
+        /* std::cout << "chances: "; */
+        /* for (auto p : chance) */
+        /*   std::cout << p << " "; */
+        /* std::cout << std::endl; */
+
+        // тут надо выбрать в какой город идти дальше
+        // рулетка должна работать только для непосещенных еще городов и их вероятностей
+
+        /* std::cout << "Sum of all chances = " << std::accumulate(chance.begin(), chance.end(), 0.0); */
+        /* std::cout << "\n\n"; */
+
+        prev_point = curr_point;
+        curr_point = Roulette(chance);
+
+        std::cout << "Distance between " << prev_point << " and " << curr_point << " is " << dist[prev_point][curr_point] << std::endl;
+
+        ants_path[ant].distance += dist[prev_point][curr_point];
+      }
+
+      // come back dist to start point
+        std::cout << "Distance between " << curr_point << " and " << ant << " is " << dist[curr_point][ant] << std::endl;
+
+        ants_path[ant].distance += dist[prev_point][curr_point];
+
+      std::cout << "\n\n";
+
     }
 
-    std::cout << "wishes: ";
-    for (auto w : wish)
-      std::cout << w << " ";
-    std::cout << std::endl;
+    // метки испаряются
+    for (int i = 0; i != sz; ++i)
+      for (int j = 0; j != sz; ++j)
+        fero[i][j] *= fero_reduce;
 
-    double wish_sum = std::accumulate(wish.begin(), wish.end(), 0.0);
-    // матрица вероятностей перейти от города i в город j
-    std::vector<double> chance(sz);
-    for (int j = 0; j != sz; ++j) {
-      chance[j] = wish[j] / wish_sum;
+    for (int ant = 0; ant < ants; ++ant) {
+      double delta_fero = Q / ants_path[ant].distance;
+      /* std::cout << "delta_fero = " << delta_fero << std::endl; */
+      for (std::size_t i = 0; i < ants_path[ant].vertices.size() - 1; ++i) {
+        /* std::cout << "i: " << i << "; i + 1: " << i + 1 << std::endl; */
+        fero[ants_path[ant].vertices[i]][ants_path[ant].vertices[i + 1]] +=
+                                                                     delta_fero;
+      }
     }
 
-    std::cout << "chances: ";
-    for (auto p : chance)
-      std::cout << p << " ";
+    for (std::size_t p = 0; p < ants_path.size(); ++p) {
+      std::cout << "ANT " << p << ":\npath: ";
+      for (int v : ants_path[p].vertices)
+        std::cout << v << " ";
+      std::cout << "\ndistance: " << ants_path[p].distance << "\n\n";
+    }
+
+  }
+
+  std::cout << "FEROMONES:\n";
+  for (int i = 0; i != sz; ++i) {
+    for (int j = 0; j != sz; ++j)
+      std::cout << fero[i][j] << " ";
     std::cout << std::endl;
-
-    // тут надо выбрать в какой город идти дальше
-    // рулетка должна работать только для непосещенных еще городов и их вероятностей
-
-    std::cout << "Sum of all chances = " << std::accumulate(chance.begin(), chance.end(), 0.0);
-    std::cout << "\n\n";
-
-    start_point = Roulette(chance, visited);
-
-
-    /* changing start point for ant */
-
-    break;
-
   }
 
   return res;

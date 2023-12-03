@@ -3,12 +3,9 @@
 
 #include "../graph/s21_graph.h"
 
-struct TsmResult;
-
 class GraphAlgorithms {
   public:
     struct TsmResult {
-      // int* vertices;
       std::vector<int> vertices;
       double distance{0};
     };
