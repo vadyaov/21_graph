@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <algorithm>
 
 void Graph::LoadGraphFromFile(const std::string& filename) {
   std::ifstream istrm;
@@ -82,6 +83,14 @@ bool Graph::Empty() const noexcept {
 
 std::size_t Graph::Size() const noexcept {
   return size;
+}
+
+double Graph::MinWeight() const noexcept {
+  return *std::min_element(adjacent_.begin(), adjacent_.end());
+}
+
+double Graph::MaxWeight() const noexcept {
+  return *std::max_element(adjacent_.begin(), adjacent_.end());
 }
 
 std::ostream& operator<<(std::ostream& os, const Graph& g) {

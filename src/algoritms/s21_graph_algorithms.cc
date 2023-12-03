@@ -2,6 +2,9 @@
 
 #include <limits>
 #include <queue>
+#include <cmath>
+#include <random>
+#include <numeric>
 
 #include "stack.h"
 #include "queue.h"
@@ -16,12 +19,6 @@ struct Accessor {
   static int Get(const s21::queue<int>& s) {
     return s.front();
   }
-};
-
-struct TsmResult {
-  // int* vertices;
-  std::vector<int> vertices;
-  double distance{0};
 };
 
 // цвета можно заменить на посещение\непосещение вершины, если не пригодятся
@@ -179,8 +176,125 @@ std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph&
   return A;
 }
 
-TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const Graph &graph) {
+double RandomValue() {
+  std::random_device rd;
+  std::mt19937 engine(rd());
+  std::uniform_real_distribution<double> normal_distrib(0.0, 1.0);
+
+  return normal_distrib(engine);
+}
+
+// simple min-max normalization
+std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
+  const std::size_t sz = graph.Size();
+  const double min = graph.MinWeight();
+  const double max = graph.MaxWeight();
+  
+  std::vector<std::vector<double>> normalized(sz, std::vector<double>(sz));
+
+  for(std::size_t i = 0; i != sz; ++i)
+    for(std::size_t j = 0; j != sz; ++j)
+      normalized[i][j] = (graph[i][j] - min) / (max - min);
+
+  return normalized;
+}
+
+int Roulette(const std::vector<double>& chance, const std::vector<bool>& visited) {
+  int next_point;
+  std::size_t visited_num = std::count(visited.begin(), visited.end(), true);
+  std::vector<std::pair<double, double>> intervals(chance.size() - visited_num);
+
+  std::cout << "intervals size = " << intervals.size() << std::endl;
+  for (std::size_t i = 0, j = 0; i < chance.size(); ++i) {
+    if (chance[i] == 0) continue;
+
+    double first = (j == 0) ? 0 : intervals[j - 1].second;
+    double second = first + chance[i];
+
+    intervals[j++] = (std::make_pair(first, second));
+  }
+  
+  for (auto pair : intervals)
+    std::cout << pair.first << "-" << pair.second << std::endl;
+
+  const double random_value = RandomValue();
+  std::cout << "RANDOMMED " << random_value << std::endl;
+
+  for (std::size_t i = 0, j = 0; i != chance.size(); ++i) {
+    if (chance[i] == 0) continue;
+    if (random_value > intervals[j].first && random_value <= intervals[j++].second)
+      next_point = i;
+  }
+
+  std::cout << "next point will be " << next_point << "\n\n";
+  return next_point;
+}
+
+GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const Graph &graph) {
   TsmResult res;
+  const int sz = graph.Size();
+  /* const double Q = 4.0; */
+
+  const double alpha = 1.0;
+  const double beta = 0.0;
+
+  // матрица близости
+  std::vector<std::vector<double>> dist = NormalizedGraph(graph);
+  // матрица меток ( феромонов )
+  std::vector<std::vector<double>> fero(sz, std::vector<double>(sz, 0.2));
+
+  /* std::cout << "Distances: \n"; */
+  /* for (int i = 0; i < sz; ++i) { */
+  /*   for (int j = 0; j < sz; ++j) */
+  /*     std::cout << dist[i][j] << " "; */
+  /*   std::cout << std::endl; */
+  /* } */
+  /* std::cout << std::endl; */
+
+  // проход муравья от каждой вершины по всем остальным
+  int start_point = 0;
+  std::vector<bool> visited(sz, false);
+  for (int i = 0; i < sz; ++i) {
+
+    visited[start_point] = true;
+    // матрица желаний перейти из города i в город j;
+    std::vector<double> wish(sz);
+    for (int j = 0; j != sz; ++j) {
+      wish[j] = !visited[j] * std::pow(fero[start_point][j], alpha) *
+                             std::pow(dist[start_point][j], beta);
+    }
+
+    std::cout << "wishes: ";
+    for (auto w : wish)
+      std::cout << w << " ";
+    std::cout << std::endl;
+
+    double wish_sum = std::accumulate(wish.begin(), wish.end(), 0.0);
+    // матрица вероятностей перейти от города i в город j
+    std::vector<double> chance(sz);
+    for (int j = 0; j != sz; ++j) {
+      chance[j] = wish[j] / wish_sum;
+    }
+
+    std::cout << "chances: ";
+    for (auto p : chance)
+      std::cout << p << " ";
+    std::cout << std::endl;
+
+    // тут надо выбрать в какой город идти дальше
+    // рулетка должна работать только для непосещенных еще городов и их вероятностей
+
+    std::cout << "Sum of all chances = " << std::accumulate(chance.begin(), chance.end(), 0.0);
+    std::cout << "\n\n";
+
+    start_point = Roulette(chance, visited);
+
+
+    /* changing start point for ant */
+
+    break;
+
+  }
 
   return res;
 }

@@ -7,6 +7,12 @@ struct TsmResult;
 
 class GraphAlgorithms {
   public:
+    struct TsmResult {
+      // int* vertices;
+      std::vector<int> vertices;
+      double distance{0};
+    };
+
     // usign stack
     static std::vector<int> DepthFirstSearch(const Graph& graph, int s);
 

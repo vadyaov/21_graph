@@ -4,7 +4,7 @@
 
 int main() {
   Graph graph;
-  graph.LoadGraphFromFile("../graph/examples/prim.txt");
+  graph.LoadGraphFromFile("../graph/examples/graph_0.txt");
   std::cout << graph << std::endl;
 
   if (graph.IsDirect())
@@ -36,9 +36,26 @@ int main() {
   /* } */
 
 
-  for (int i : GraphAlgorithms::GetLeastSpanningTree(graph))
-    std::cout << i << ' ';
-  std::cout << std::endl;
+  /* auto ostov = GraphAlgorithms::GetLeastSpanningTree(graph); */
+  /* std::cout << "Ostov matrix: " << std::endl; */
+  /* for (int i = 0, sz = ostov.size(); i != sz; ++i) { */
+  /*   for (int j = 0; j != sz; ++j) */
+  /*     std::cout << ostov[i][j] << " "; */
+  /*   std::cout << std::endl; */
+  /* } */
+
+  auto res = GraphAlgorithms::SolveTravelingSalesmanProblem(graph);
+  std::cout << "EXPECTED:\n";
+  std::cout << " sequence of traversing vertices: 1-8-5-4-10-6-3-7-2-11-9-1\n"
+    "route length: 253\n";
+
+  std::cout << "GOT:\n";
+  std::cout << " sequence of traversing vertices: ";
+  for (auto i : res.vertices)
+    std::cout << i << " ";
+
+  std::cout << "\nroute length: " << res.distance << std::endl;
+  
 
   return 0;
 }

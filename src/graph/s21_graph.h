@@ -30,6 +30,9 @@ class Graph {
 
     std::size_t Size() const noexcept;
 
+    double MinWeight() const noexcept;
+    double MaxWeight() const noexcept;
+
 
   public:
     friend std::ostream& operator<<(std::ostream& os, const Graph& g);
