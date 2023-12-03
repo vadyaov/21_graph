@@ -3,9 +3,10 @@
 
 #include "../graph/s21_graph.h"
 
+struct TsmResult;
+
 class GraphAlgorithms {
   public:
-
     // usign stack
     static std::vector<int> DepthFirstSearch(const Graph& graph, int s);
 
@@ -19,7 +20,9 @@ class GraphAlgorithms {
     static std::vector<std::vector<int>>
       GetShortestPathsBetweenAllVertices(const Graph& graph);
 
-    static std::vector<int> GetLeastSpanningTree(const Graph& graph);
+    static std::vector<std::vector<int>> GetLeastSpanningTree(const Graph& graph);
+
+    static TsmResult SolveTravelingSalesmanProblem(const Graph &graph);
 };
 
 #endif // S21_GRAPH_ALGORITHMS_H_

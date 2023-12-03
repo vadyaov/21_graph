@@ -18,6 +18,12 @@ struct Accessor {
   }
 };
 
+struct TsmResult {
+  // int* vertices;
+  std::vector<int> vertices;
+  double distance{0};
+};
+
 // цвета можно заменить на посещение\непосещение вершины, если не пригодятся
     // color[u] - цвет каждой вершины u из V[graph]
     // p[u] - предшественник вершины u
@@ -127,16 +133,21 @@ GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
   return d;
 }
 
-// вроде работает, только теперь надо возвращать матрицу смежности для остова
-std::vector<int> GraphAlgorithms::GetLeastSpanningTree(const Graph& graph) {
+std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph& graph) {
+  // or make undirect graph from direct, removing const modifier
+  if (graph.IsDirect())
+    throw std::invalid_argument("Graph must be undirected.");
+
   const int sz = (int) graph.Size();
   const int max_int = std::numeric_limits<int>::max();
-  std::vector<int> A;
+
+  std::vector<std::vector<int>> A(sz, std::vector<int>(sz, 0));
 
   std::vector<int> key(sz, max_int);
-  key[0] = 0;  // starting from vertex No.0
+  key[0] = 0;
 
-  /* std::vector<int> p(sz, -1); // parents */
+  std::vector<bool> used(sz);
+  std::vector<int> p(sz, -1);
 
   std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>,
     std::greater<std::pair<int, int>>> Q;
@@ -144,29 +155,32 @@ std::vector<int> GraphAlgorithms::GetLeastSpanningTree(const Graph& graph) {
 
   while (!Q.empty()) {
     int u = Q.top().second;
-    std::cout << "size = " << Q.size() << "; " << Q.top().first << " " << Q.top().second << std::endl;
     Q.pop();
 
-    if (std::find(A.begin(), A.end(), u) != A.end()) continue;
-    A.push_back(u);
+    if (used[u] == true) continue;
+    if (key[u] == max_int)
+      throw std::runtime_error("Ostov tree does not exist");
 
-    std::cout << "A: ";
-    for(int v : A)
-      std::cout << v << " ";
-    std::cout << std::endl;
+    used[u] = true;
 
-    for (int j = 0; j != sz; ++j) {
-      if (graph[u][j] != 0) {
-        if (std::find(A.begin(), A.end(), j) == A.end() && graph[u][j] < key[j]) {
+    if (p[u] != -1)
+      A[p[u]][u] = A[u][p[u]] = graph[u][p[u]];
+
+    for (int j = 0; j != sz; ++j)
+      if (graph[u][j] != 0)
+        if (used[j] == false && graph[u][j] < key[j]) {
           key[j] = graph[u][j];
-          std::cout << "pushing " << j << " with " << key[j] << std::endl;
+          p[j] = u;
           Q.push(std::make_pair(key[j], j));
         }
-      }
-    }
+
   }
 
-  /* std::cout << "First element iq Q: " << Q.top().first << std::endl; */
-
   return A;
+}
+
+TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const Graph &graph) {
+  TsmResult res;
+
+  return res;
 }
