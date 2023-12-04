@@ -177,9 +177,9 @@ std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph&
 }
 
 double RandomValue() {
-  std::random_device rd;
-  std::mt19937 engine(rd());
-  std::uniform_real_distribution<double> normal_distrib(0.0, 1.0);
+  static std::random_device rd;
+  static std::mt19937 engine(rd());
+  static std::uniform_real_distribution<double> normal_distrib(0.0, 1.0);
 
   return normal_distrib(engine);
 }
@@ -187,14 +187,14 @@ double RandomValue() {
 // simple min-max normalization
 std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
   const std::size_t sz = graph.Size();
-  const double min = graph.MinWeight();
-  const double max = graph.MaxWeight();
+  /* const double min = graph.MinWeight(); */
+  /* const double max = graph.MaxWeight(); */
   
   std::vector<std::vector<double>> normalized(sz, std::vector<double>(sz));
 
   for(std::size_t i = 0; i != sz; ++i)
     for(std::size_t j = 0; j != sz; ++j)
-      normalized[i][j] = (graph[i][j] - min) / (max - min);
+      normalized[i][j] = 1.0 / graph[i][j]; //(graph[i][j] - min) / (max - min);
 
   return normalized;
 }
@@ -225,58 +225,40 @@ GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const 
   const int ants = sz; // число муравьев = кол-ву вершин
 
   const double alpha = 1.0;
-  const double beta = 1.0;
-  const double Q = 0.25;
+  const double beta = 4.0;
+  const double Q = 1.0;
 
-  const double fero_reduce = 0.64; // 64% меток остается после испарения
+  const double fero_reduce = 0.6; // 60% меток остается после испарения
 
   // матрица близости
   std::vector<std::vector<double>> dist = NormalizedGraph(graph);
   // матрица меток ( феромонов )
-  std::vector<std::vector<double>> fero(sz, std::vector<double>(sz, 0.2));
+  std::vector<std::vector<double>> fero(sz, std::vector<double>(sz, 0.1));
 
 
-  std::cout << "Distances: \n";
-  for (int i = 0; i < sz; ++i) {
-    fero[i][i] = 0;
-    for (int j = 0; j < sz; ++j)
-      std::cout << dist[i][j] << " ";
-    std::cout << std::endl;
-  }
-  std::cout << std::endl;
-
-  for (int iter = 0; iter < 200; ++iter) {
-
-  std::cout << "FEROMONES:\n";
-  for (int i = 0; i != sz; ++i) {
-    for (int j = 0; j != sz; ++j)
-      std::cout << fero[i][j] << " ";
-    std::cout << std::endl;
-  }
+  for (int iter = 0; iter < 15; ++iter) {
 
     // ants_path[i] - маршрут который проделал i-й муравей
     // sz + 1, потому что муравей совершает цикл и возвращается начальную вершину
-    std::vector<TsmResult> ants_path(ants, {std::vector<int>(sz, 0), 0});
+    std::vector<TsmResult> ants_path(ants, {std::vector<int>(sz + 1, 0), 0});
 
-    // проход муравья от каждой вершины по всем остальным
-    
+    // i-й муравей начинает свой путь из i-й вершины
     for (int ant = 0; ant < ants; ++ant) {
-      int curr_point = ant; // вершина из которой начиает идти первый муравей
-      int prev_point = curr_point;
-
-      ants_path[ant].vertices[sz - 1] = curr_point;
-
+      int curr_point = ant;
       std::vector<bool> visited(sz, false);
+
+      ants_path[ant].vertices[0] = ants_path[ant].vertices[sz] = curr_point;
+
       for (int i = 0; i < sz - 1; ++i) {
         
         visited[curr_point] = true;
-        ants_path[ant].vertices[i] = curr_point;
 
         // матрица желаний перейти из города i в город j;
         std::vector<double> wish(sz);
         for (int j = 0; j != sz; ++j) {
-          wish[j] = !visited[j] * std::pow(fero[curr_point][j], alpha) *
-                                 std::pow(dist[curr_point][j], beta);
+          if (!visited[j])
+            wish[j] = std::pow(fero[curr_point][j], alpha) *
+                      std::pow(dist[curr_point][j], beta);
         }
 
         /* std::cout << "wishes: "; */
@@ -296,27 +278,24 @@ GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const 
         /*   std::cout << p << " "; */
         /* std::cout << std::endl; */
 
-        // тут надо выбрать в какой город идти дальше
-        // рулетка должна работать только для непосещенных еще городов и их вероятностей
-
-        /* std::cout << "Sum of all chances = " << std::accumulate(chance.begin(), chance.end(), 0.0); */
-        /* std::cout << "\n\n"; */
-
-        prev_point = curr_point;
+        int prev_point = curr_point;
         curr_point = Roulette(chance);
 
-        std::cout << "Distance between " << prev_point << " and " << curr_point << " is " << dist[prev_point][curr_point] << std::endl;
-
+        ants_path[ant].vertices[i + 1] = curr_point;
+        /* std::cout << "adding " << dist[prev_point][curr_point] << " to distance\n"; */
         ants_path[ant].distance += dist[prev_point][curr_point];
       }
 
-      // come back dist to start point
-        std::cout << "Distance between " << curr_point << " and " << ant << " is " << dist[curr_point][ant] << std::endl;
+      /* std::cout << "adding " << dist[curr_point][ant] << " to distance\n"; */
+      ants_path[ant].distance += dist[curr_point][ant];
 
-        ants_path[ant].distance += dist[prev_point][curr_point];
+    }
 
-      std::cout << "\n\n";
-
+    for (std::size_t p = 0; p < ants_path.size(); ++p) {
+      std::cout << "\nANT " << p << ":\npath: ";
+      for (int v : ants_path[p].vertices)
+        std::cout << v << " ";
+      std::cout << "\ndistance: " << ants_path[p].distance << "\n";
     }
 
     // метки испаряются
@@ -324,21 +303,16 @@ GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const 
       for (int j = 0; j != sz; ++j)
         fero[i][j] *= fero_reduce;
 
+    // update feromones
     for (int ant = 0; ant < ants; ++ant) {
       double delta_fero = Q / ants_path[ant].distance;
+      /* std::cout << "ANT: " << ant << "\n"; */
       /* std::cout << "delta_fero = " << delta_fero << std::endl; */
       for (std::size_t i = 0; i < ants_path[ant].vertices.size() - 1; ++i) {
-        /* std::cout << "i: " << i << "; i + 1: " << i + 1 << std::endl; */
-        fero[ants_path[ant].vertices[i]][ants_path[ant].vertices[i + 1]] +=
-                                                                     delta_fero;
+        /* std::cout << " a: " << ants_path[ant].vertices[i] << */
+        /*              " b: " << ants_path[ant].vertices[i + 1] << "\n\n"; */
+        fero[ants_path[ant].vertices[i]][ants_path[ant].vertices[i + 1]] += delta_fero;
       }
-    }
-
-    for (std::size_t p = 0; p < ants_path.size(); ++p) {
-      std::cout << "ANT " << p << ":\npath: ";
-      for (int v : ants_path[p].vertices)
-        std::cout << v << " ";
-      std::cout << "\ndistance: " << ants_path[p].distance << "\n\n";
     }
 
   }
@@ -352,3 +326,17 @@ GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const 
 
   return res;
 }
+
+  /* std::cout << "Distances: \n"; */
+  /* for (int i = 0; i < sz; ++i) { */
+  /*   fero[i][i] = 0; */
+  /*   for (int j = 0; j < sz; ++j) */
+  /*     std::cout << dist[i][j] << " "; */
+  /*   std::cout << std::endl; */
+  /* } */
+  /* std::cout << std::endl; */
+
+
+        /* std::cout << "Distance between " << prev_point << " and " << curr_point << " is " << dist[prev_point][curr_point] << std::endl; */
+
+
