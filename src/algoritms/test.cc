@@ -4,7 +4,7 @@
 
 int main() {
   Graph graph;
-  graph.LoadGraphFromFile("../graph/examples/graph_0.txt");
+  graph.LoadGraphFromFile("../graph/examples/graph_you.txt");
   std::cout << graph << std::endl;
 
   if (graph.IsDirect())
@@ -46,7 +46,7 @@ int main() {
 
   auto res = GraphAlgorithms::SolveTravelingSalesmanProblem(graph);
   std::cout << "EXPECTED:\n";
-  std::cout << " sequence of traversing vertices: 1-8-5-4-10-6-3-7-2-11-9-1\n"
+  std::cout << " sequence of traversing vertices: 0-7-4-3-9-5-2-6-1-10-8-0\n"
     "route length: 253\n";
 
   std::cout << "GOT:\n";
