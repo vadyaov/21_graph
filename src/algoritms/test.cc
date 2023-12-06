@@ -4,7 +4,7 @@
 
 int main() {
   Graph graph;
-  graph.LoadGraphFromFile("../graph/examples/graph_you.txt");
+  graph.LoadGraphFromFile("../graph/examples/graph_0.txt");
   std::cout << graph << std::endl;
 
   if (graph.IsDirect())
