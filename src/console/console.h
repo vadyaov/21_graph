@@ -9,12 +9,14 @@
 
 class Console {
   public:
-    enum Action {EXIT = 0, LOAD, BREADTH, DEPTH, DIJKSTRA, FL_WARSH, PRIM, ACO};
+    enum Action {LOAD = 1, BFS, DFS, DJK, FL_WRSH, PRIM, ACO};
 
     void Run();
 
   private:
     Graph g;
+    int width = 60;
+    int heigh = 12;
 };
 
 #endif // CONSOLE_H_

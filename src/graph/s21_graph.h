@@ -17,6 +17,8 @@ class Graph {
     };
 
   public:
+    Graph() :adjacent_{}, size{0}, directed{false} {}
+
     // loading graph from file with adjacent matrix
     void LoadGraphFromFile(const std::string& filename);
 
