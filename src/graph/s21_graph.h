@@ -17,7 +17,7 @@ class Graph {
     };
 
   public:
-    Graph() :adjacent_{}, size{0}, directed{false} {}
+    Graph() : adjacent_{}, size{0}, directed{false} {}
 
     // loading graph from file with adjacent matrix
     void LoadGraphFromFile(const std::string& filename);
@@ -32,9 +32,8 @@ class Graph {
 
     std::size_t Size() const noexcept;
 
-    double MinWeight() const noexcept;
-    double MaxWeight() const noexcept;
-
+    /* double MinWeight() const noexcept; */
+    /* double MaxWeight() const noexcept; */
 
   public:
     friend std::ostream& operator<<(std::ostream& os, const Graph& g);
@@ -43,6 +42,7 @@ class Graph {
     ProxyRow operator[](int row) {
       return adjacent_.data() + row * size; // implicit cast to ProxyRow(int *)
     }
+
     const ProxyRow operator[](int row) const {
       return adjacent_.data() + row * size; // implicit cast to ProxyRow(int *)
     }

@@ -81,7 +81,9 @@ std::vector<int> GraphAlgorithms::BreadthFirstSearch(const Graph &graph, int s) 
 int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph,
                                                               int s, int f) {
   const int sz = (int) graph.Size();
-  if (s < 1 || s > sz - 1 || f < 1 || f > sz - 1)
+  if (sz == 0)
+    throw std::invalid_argument("Empty graph");
+  if (s < 1 || s > sz || f < 1 || f > sz)
     throw std::invalid_argument("Vertex is out of boundary");
 
   std::vector<int> d(sz, std::numeric_limits<int>::max());
@@ -111,6 +113,9 @@ int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph,
 std::vector<std::vector<int>>
 GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
   const int sz = graph.Size();
+  if (sz == 0)
+    throw std::invalid_argument("Empty graph");
+
   const int max_int = std::numeric_limits<int>::max();
 
   std::vector<std::vector<int>> d(sz, std::vector<int>(sz, max_int));
@@ -131,11 +136,14 @@ GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
 }
 
 std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph& graph) {
+  const int sz = (int) graph.Size();
+  if (sz == 0)
+    throw std::invalid_argument("Empty graph");
+
   // or make undirect graph from direct, removing const modifier
   if (graph.IsDirect())
     throw std::invalid_argument("Graph must be undirected.");
 
-  const int sz = (int) graph.Size();
   const int max_int = std::numeric_limits<int>::max();
 
   std::vector<std::vector<int>> A(sz, std::vector<int>(sz, 0));
@@ -184,7 +192,6 @@ double RandomValue() {
   return normal_distrib(engine);
 }
 
-// simple min-max normalization
 std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
   const std::size_t sz = graph.Size();
   /* const double min = graph.MinWeight(); */
@@ -220,17 +227,6 @@ int Roulette(const std::vector<double>& chance) {
   return next_point;
 }
 
-bool SolutionFound(const std::vector<GraphAlgorithms::TsmResult>& ants_data) {
-  bool result = true;
-  double dist = ants_data[0].distance;
-
-  for (std::size_t i = 1; result == true && i != ants_data.size(); ++i)
-    if (ants_data[i].distance != dist)
-      result = false;
-
-  return result;
-}
-
 GraphAlgorithms::TsmResult
 MinimalSolution (const std::vector<GraphAlgorithms::TsmResult>& ants_data) {
   GraphAlgorithms::TsmResult min = ants_data[0];
@@ -244,10 +240,13 @@ MinimalSolution (const std::vector<GraphAlgorithms::TsmResult>& ants_data) {
 }
 
 GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const Graph &graph) {
-  TsmResult min_path {{}, std::numeric_limits<double>::max()};
-  constexpr int MAX_ITERATIONS = 15;
-
   const int sz = graph.Size();
+  if (sz == 0)
+    throw std::invalid_argument("Empty graph");
+
+  TsmResult min_path {{}, std::numeric_limits<double>::max()};
+  constexpr int MAX_ITERATIONS = 100;
+
   const int ants = sz;
 
   const double alpha = 1.0;
@@ -291,7 +290,7 @@ GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const 
         curr_point = Roulette(chance);
 
         if (curr_point == -1)
-          throw std::runtime_error("Cannot find the best solution");
+          throw std::runtime_error("Cannot find the solution");
 
         ants_path[ant].vertices[i + 1] = curr_point;
         ants_path[ant].distance += graph[prev_point][curr_point];

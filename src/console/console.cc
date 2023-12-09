@@ -158,7 +158,7 @@ void Console::Run() {
       } case Action::FL_WRSH: {
         try {
           auto res = GraphAlgorithms::GetShortestPathsBetweenAllVertices(g);
-          fl_wrsh_win = newwin(g.Size() + 2, g.Size() * 4, 18, 1);
+          fl_wrsh_win = newwin(g.Size() + 2, g.Size() * 4, 19, 1);
           int x = 1, y = 1;
           box(fl_wrsh_win, 0, 0);
           for (std::size_t i = 0, sz = res.size(); i != sz; ++i) {
@@ -177,7 +177,7 @@ void Console::Run() {
       } case Action::PRIM: {
         try {
           auto res = GraphAlgorithms::GetLeastSpanningTree(g);
-          fl_wrsh_win = newwin(g.Size() + 2, g.Size() * 4, 18, 1);
+          fl_wrsh_win = newwin(g.Size() + 2, g.Size() * 4, 19, 1);
           int x = 1, y = 1;
           box(fl_wrsh_win, 0, 0);
           for (std::size_t i = 0, sz = res.size(); i != sz; ++i) {
@@ -194,7 +194,15 @@ void Console::Run() {
         }
           break;
       } case Action::ACO:
-
+          try {
+            GraphAlgorithms::TsmResult res = GraphAlgorithms::SolveTravelingSalesmanProblem(g);
+            for (std::size_t i = 0, j = 1, sz = res.vertices.size(); i != sz; ++i, j += 3) {
+              mvprintw(17, j, "%d", res.vertices[i]);
+            }
+            mvprintw(18, 1, "distance = %lf", res.distance);
+          } catch (const std::exception& e) {
+            mvprintw(16, 0, "%s\n", e.what());
+          }
           break;
       }
       refresh();
@@ -204,6 +212,9 @@ void Console::Run() {
     clrtoeol();
 
     move(17, 0);
+    clrtoeol();
+
+    move(18, 0);
     clrtoeol();
 
 		if (choice == static_cast<int>(choices.size()))	/* User did a choice come out of the infinite loop */
