@@ -18,8 +18,24 @@ void print_menu(WINDOW *menu_win, int highlight, const std::vector<std::string>&
 	wrefresh(menu_win);
 }
 
+void print_graph(WINDOW* graph_win, const Graph& g) {
+  int x = 1, y = 1;
+  box(graph_win, 0, 0);
+  for (std::size_t i = 0, sz = g.Size(); i != sz; ++i) {
+    for (std::size_t j = 0; j != sz; ++j) {
+      mvwprintw(graph_win, y, x, "%d", g[i][j]);
+      x += 4;
+    }
+    y++;
+    x = 1;
+  }
+	wrefresh(graph_win);
+}
+
 void Console::Run() {
-  WINDOW *menu_win;
+  WINDOW *menu_win = nullptr;
+  WINDOW *graph_win = nullptr;
+  WINDOW *fl_wrsh_win = nullptr;
 
   const std::vector<std::string> choices = { 
         "Loading graph from .txt",
@@ -37,8 +53,6 @@ void Console::Run() {
 
 	initscr();
 	clear();
-  echo();
-	/* noecho(); */
 	cbreak();	/* Line buffering disabled. pass on everything */
   curs_set(0);
 
@@ -52,6 +66,7 @@ void Console::Run() {
 
 	print_menu(menu_win, highlight, choices);
 	while(1) {
+    noecho();
     int c = wgetch(menu_win);
 		switch(c) {
       case KEY_UP:
@@ -69,27 +84,35 @@ void Console::Run() {
 			case 10:
 				choice = highlight;
 				break;
-			/* default: */
-			/* 	mvprintw(24, 0, "Charcter pressed is = %3d Hopefully it can be printed as '%c'", c, c); */
-			/* 	refresh(); */
-			/* 	break; */
 		}
+
 		print_menu(menu_win, highlight, choices);
 
     if (choice != 0) {
-      /* echo(); */
-      mvprintw(15, 0, "%d. %s\n", choice, choices[choice - 1].data());
+      echo();
+      /* mvprintw(15, 0, "%d. %s\n", choice, choices[choice - 1].data()); */
+      if (fl_wrsh_win) {
+        wclear(fl_wrsh_win);
+        wrefresh(fl_wrsh_win);
+      }
+
       switch (choice) {
         case Action::LOAD: {
           mvprintw(16, 1, "Enter path to file: ");
           char path[128];
-          /* echo(); */
           getstr(path);
-          /* noecho(); */
           clrtoeol();
           try {
             g.LoadGraphFromFile(path);
             mvprintw(17, 0, "Success");
+
+            if (graph_win) {
+              wclear(graph_win);
+              wrefresh(graph_win);
+            }
+
+            graph_win = newwin(g.Size() + 2, g.Size() * 4, 40, 30);
+            print_graph(graph_win, g);
           } catch (const std::exception& e) {
             mvprintw(16, 0, "%s\n", e.what());
           }
@@ -123,13 +146,52 @@ void Console::Run() {
           }
           break;
       } case Action::DJK: {
-
+          mvprintw(16, 1, "Enter the start/finish points: ");
+          int start = 0, finish = 0;
+          scanw("%d %d", &start, &finish);
+        try {
+          mvprintw(17, 1, "%d", GraphAlgorithms::GetShortestPathBetweenVertices(g, start, finish));
+        } catch (const std::exception& e) {
+          mvprintw(16, 0, "%s\n", e.what());
+        }
           break;
       } case Action::FL_WRSH: {
-
+        try {
+          auto res = GraphAlgorithms::GetShortestPathsBetweenAllVertices(g);
+          fl_wrsh_win = newwin(g.Size() + 2, g.Size() * 4, 18, 1);
+          int x = 1, y = 1;
+          box(fl_wrsh_win, 0, 0);
+          for (std::size_t i = 0, sz = res.size(); i != sz; ++i) {
+            for (std::size_t j = 0; j != sz; ++j) {
+              mvwprintw(fl_wrsh_win, y, x, "%d", res[i][j]);
+              x += 4;
+            }
+            y++;
+            x = 1;
+          }
+          wrefresh(fl_wrsh_win);
+        } catch (const std::exception& e) {
+          mvprintw(16, 0, "%s\n", e.what());
+        }
           break;
       } case Action::PRIM: {
-
+        try {
+          auto res = GraphAlgorithms::GetLeastSpanningTree(g);
+          fl_wrsh_win = newwin(g.Size() + 2, g.Size() * 4, 18, 1);
+          int x = 1, y = 1;
+          box(fl_wrsh_win, 0, 0);
+          for (std::size_t i = 0, sz = res.size(); i != sz; ++i) {
+            for (std::size_t j = 0; j != sz; ++j) {
+              mvwprintw(fl_wrsh_win, y, x, "%d", res[i][j]);
+              x += 4;
+            }
+            y++;
+            x = 1;
+          }
+          wrefresh(fl_wrsh_win);
+        } catch (const std::exception& e) {
+          mvprintw(16, 0, "%s\n", e.what());
+        }
           break;
       } case Action::ACO:
 
@@ -148,7 +210,7 @@ void Console::Run() {
 			break;
     choice = 0;
 	}	
-	mvprintw(25, 0, "PRESS ANY KEY TO QUIT");
+	mvprintw(55, 0, "PRESS ANY KEY TO QUIT");
 	refresh();
   getch();
 	clrtoeol();
