@@ -35,11 +35,11 @@ class Graph {
     std::size_t Size() const noexcept;
 
   public:
-    friend std::ostream& operator<<(std::ostream& os, const Graph& g);
+    /* friend std::ostream& operator<<(std::ostream& os, const Graph& g); */
 
-    ProxyRow operator[](int row) {
-      return adjacent_.data() + row * size;
-    }
+    /* ProxyRow operator[](int row) { */
+    /*   return adjacent_.data() + row * size; */
+    /* } */
 
     const ProxyRow operator[](int row) const {
       return adjacent_.data() + row * size;

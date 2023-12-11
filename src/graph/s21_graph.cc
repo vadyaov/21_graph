@@ -1,7 +1,6 @@
 #include "s21_graph.h"
 
-#include <iomanip>
-#include <iostream>
+/* #include <iomanip> */
 #include <algorithm>
 
 void Graph::LoadGraphFromFile(const std::string& filename) {
@@ -49,7 +48,6 @@ void Graph::ExportGraphToDot(const std::string& filename) const {
   const std::string connection = directed ? " -> " : " -- ";
 
   std::string name = GetName(filename);
-  std::cout << name << std::endl;
 
   std::string graph_title = (directed ? "digraph " : "graph ") + name;
 
@@ -102,15 +100,15 @@ std::size_t Graph::Size() const noexcept {
   return size;
 }
 
-std::ostream& operator<<(std::ostream& os, const Graph& g) {
-  for (std::size_t i = 0, j = 1; i < g.size * g.size; ++i, ++j) {
-    os << std::setw(4);
-    os << g.adjacent_[i];
-    if (j == g.size) {
-      os << std::endl;
-      j = 0;
-    }
-  }
+/* std::ostream& operator<<(std::ostream& os, const Graph& g) { */
+/*   for (std::size_t i = 0, j = 1; i < g.size * g.size; ++i, ++j) { */
+/*     os << std::setw(4); */
+/*     os << g.adjacent_[i]; */
+/*     if (j == g.size) { */
+/*       os << std::endl; */
+/*       j = 0; */
+/*     } */
+/*   } */
 
-  return os;
-}
+/*   return os; */
+/* } */

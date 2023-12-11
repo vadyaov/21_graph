@@ -5,7 +5,7 @@
 int main() {
   Graph graph;
   graph.LoadGraphFromFile("./examples/graph_0.txt");
-  std::cout << graph << std::endl;
+  /* std::cout << graph << std::endl; */
 
   if (graph.IsDirect())
     std::cout << "This graph is directed\n";

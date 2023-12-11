@@ -136,8 +136,3 @@ TEST(load_export, t4) {
     for (std::size_t j = 0; j != sz; ++j)
       EXPECT_EQ(g[i][j], expected[i][j]);
 }
-
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
