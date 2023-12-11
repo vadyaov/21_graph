@@ -5,22 +5,46 @@ GRAPH_DIR = ./graph
 GRAPH_SRC = $(GRAPH_DIR)/s21_graph.cc
 GRAPH_OBJ = $(GRAPH_DIR)/s21_graph.o
 
-# GTEST_DIR = 
-# GTEST_LIB = /usr/lib/x86_64-linux-gnu/libgtest.a
-# GTEST_MAIN_LIB = /usr/lib/x86_64-linux-gnu/libgtest_main.a
+ALGO_DIR = ./algorithms
+ALGO_SRC = $(ALGO_DIR)/s21_graph_algorithms.cc
+ALGO_OBJ = $(ALGO_DIR)/s21_graph_algorithms.o
+
+GCOV_TARGET = ./coverage
+COVERFLAGS = -fprofile-arcs -ftest-coverage
 
 all: s21_graph.a #test
 
-test: s21_graph.a
-	cmake -S ./tests/ -B ./tests/build
+test: test_graph #test_algo
+
+test_graph: s21_graph.a
+	cmake cmake -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" -S ./tests/ -B ./tests/build
 	cmake --build ./tests/build
 	cd ./tests/build && ctest
+
+# test_algo: s21_graph.a s21_graph_algorithms.a
+
+# gcov_report: $(GCOV_TARGET)
+
+# $(GCOV_TARGET): CXXFLAGS += $(COVERFLAGS)
+# $(GCOV_TARGET): clean test
+# 	lcov --rc lcov_branch_coverage=1 --capture --directory . --output-file coverage.info
+# 	genhtml coverage.info --output-directory coverage_report
+# 	lcov --remove coverage.info '*/usr/*' '*/gtest/*' --output-file coverage_filtered.info
 
 s21_graph.a: $(GRAPH_OBJ)
 	ar -rcs $@ $< 
 
+s21_graph_algorithms.a: $(ALGO_OBJ)
+	ar -rcs $@ $<
+
 $(GRAPH_OBJ): $(GRAPH_SRC)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
+$(ALGO_OBJ): $(ALGO_SRC)
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
 clean:
-	rm -f $(GRAPH_OBJ)
+	rm -f $(GRAPH_OBJ) $(ALGO_OBJ) *.a
+	rm -rf tests/build/
+	rm -rf coverage*
+	rm -rf ./examples/dots/

@@ -16,6 +16,8 @@ class Graph {
       const int& operator[](int n) const { return row[n]; }
     };
 
+    bool Directed() const noexcept;
+
   public:
     Graph() : adjacent_{}, size{0}, directed{false} {}
 
@@ -32,24 +34,16 @@ class Graph {
 
     std::size_t Size() const noexcept;
 
-    /* double MinWeight() const noexcept; */
-    /* double MaxWeight() const noexcept; */
-
   public:
     friend std::ostream& operator<<(std::ostream& os, const Graph& g);
 
-    // just for fun, allows to do graph[i][j] :)
     ProxyRow operator[](int row) {
-      return adjacent_.data() + row * size; // implicit cast to ProxyRow(int *)
+      return adjacent_.data() + row * size;
     }
 
     const ProxyRow operator[](int row) const {
-      return adjacent_.data() + row * size; // implicit cast to ProxyRow(int *)
+      return adjacent_.data() + row * size;
     }
-
-  private:
-    // only directed or undirected graphs
-    bool Directed() const noexcept;
 
   private:
     std::vector<int> adjacent_;  // adjacent matrix

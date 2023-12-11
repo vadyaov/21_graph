@@ -16,14 +16,17 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+link_directories(./../)
+
 add_executable(
   graph_test
   s21_graph_test.cc
-  ../graph/s21_graph.cc
 )
+
 target_link_libraries(
   graph_test
   GTest::gtest_main
+  -l:s21_graph.a
 )
 
 include(GoogleTest)

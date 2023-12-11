@@ -9,7 +9,7 @@ void Graph::LoadGraphFromFile(const std::string& filename) {
   istrm.open(filename, std::ios_base::in);
 
   if (!istrm.is_open())
-    throw std::invalid_argument("Can't open file.");
+    throw std::invalid_argument("Can not open file " + filename);
 
   istrm >> size;
 
@@ -24,16 +24,34 @@ void Graph::LoadGraphFromFile(const std::string& filename) {
   istrm.close();
 }
 
+std::string GetName(const std::string& filename) {
+  std::string name;
+  std::string::const_iterator it = filename.begin() + filename.find_last_of('.') - 1;
+  if (it < filename.begin()) throw std::invalid_argument("Incorrect file extension");
+
+  for (;it >= filename.cbegin() && *it != '/'; --it) {
+    name.insert(name.begin(), *it);
+  }
+
+  return name;
+}
+
 void Graph::ExportGraphToDot(const std::string& filename) const {
   if (adjacent_.empty()) return;
 
   std::ofstream ostrm;
   ostrm.open(filename, std::ios::out);
 
+  if (!ostrm.is_open())
+    throw std::invalid_argument("Can not open file " + filename);
+
   const std::string tab(4, ' ');
   const std::string connection = directed ? " -> " : " -- ";
-  std::string graph_title = (directed ? "digraph " : "graph ") +
-    filename.substr(0, filename.find_first_of('.'));
+
+  std::string name = GetName(filename);
+  std::cout << name << std::endl;
+
+  std::string graph_title = (directed ? "digraph " : "graph ") + name;
 
   ostrm << graph_title << " {\n";
 
@@ -44,8 +62,7 @@ void Graph::ExportGraphToDot(const std::string& filename) const {
         if (i + 1 == last) {
           ostrm << connection << j + 1;
         } else {
-          if (last) // to not put \n before the first row ('last' value is still zero)
-            ostrm << std::endl;
+          if (last) ostrm << std::endl;
           ostrm << tab << i + 1 << connection << j + 1;
         }
 
@@ -84,14 +101,6 @@ bool Graph::Empty() const noexcept {
 std::size_t Graph::Size() const noexcept {
   return size;
 }
-
-/* double Graph::MinWeight() const noexcept { */
-/*   return *std::min_element(adjacent_.begin(), adjacent_.end()); */
-/* } */
-
-/* double Graph::MaxWeight() const noexcept { */
-/*   return *std::max_element(adjacent_.begin(), adjacent_.end()); */
-/* } */
 
 std::ostream& operator<<(std::ostream& os, const Graph& g) {
   for (std::size_t i = 0, j = 1; i < g.size * g.size; ++i, ++j) {
