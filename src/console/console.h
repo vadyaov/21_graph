@@ -5,7 +5,7 @@
 /* #include <ncurces.h> */
 
 #include "../graph/s21_graph.h"
-#include "../algoritms/s21_graph_algorithms.h"
+#include "../algorithms/s21_graph_algorithms.h"
 
 class Console {
   public:

@@ -200,6 +200,57 @@ TEST(algo_dijkstra, t2) {
   EXPECT_EQ(dist12, 8);
 }
 
+TEST(algo_floyd_warsh, t1) {
+  const std::string path {"../examples/floyd_warsh_.txt"};
+  Graph g;
+
+  std::string currentWorkingDirectory = std::filesystem::current_path().string();
+
+  std::filesystem::current_path("/home/vadim/Projects/School21/21_graph/src/tests");
+
+  g.LoadGraphFromFile(path);
+
+  std::filesystem::current_path(currentWorkingDirectory);
+
+  auto dist = GraphAlgorithms::GetShortestPathsBetweenAllVertices(g);
+
+  std::vector<std::vector<int>> expected {
+      {0, 1, -3, 2, -4},
+      {3, 0, -4, 1, -1},
+      {7, 4, 0, 5, 3},
+      {2, -1, -5, 0, -2},
+      {8, 5, 1, 6, 0}
+  };
+
+  EXPECT_EQ(dist, expected);
+
+}
+
+TEST(algo_floyd_warsh, t2) {
+  const std::string path {"../examples/fl_wrsh_1.txt"};
+  Graph g;
+
+  std::string currentWorkingDirectory = std::filesystem::current_path().string();
+
+  std::filesystem::current_path("/home/vadim/Projects/School21/21_graph/src/tests");
+
+  g.LoadGraphFromFile(path);
+
+  std::filesystem::current_path(currentWorkingDirectory);
+
+  auto dist = GraphAlgorithms::GetShortestPathsBetweenAllVertices(g);
+
+  std::vector<std::vector<int>> expected {
+      {0, 3, 7, 5},
+      {2, 0, 6, 4},
+      {3, 1, 0, 5},
+      {5, 3, 2, 0}
+  };
+
+  EXPECT_EQ(dist, expected);
+
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
 
