@@ -18,8 +18,7 @@ test: s21_graph.a s21_graph_algorithms.a
 	@mkdir -p examples/dots/
 	@cmake -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" -S ./tests/ -B ./tests/build
 	@cmake --build ./tests/build
-	@./tests/build/graph_test
-	@./tests/build/algo_test
+	@./tests/build/test_graph
 
 gcov_report: $(GCOV_TARGET)
 

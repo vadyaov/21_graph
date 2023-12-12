@@ -27,9 +27,9 @@ struct Accessor {
     // d[u] - расстояние от s до u
 template<typename ContainerType>
   std::vector<int> BreadthDepthInterface(const Graph& graph, int s) {
-    if (graph.Empty()) throw std::logic_error("Empty graph");
+    if (graph.Empty()) throw std::invalid_argument("Empty graph");
     if (s < 1 || static_cast<std::size_t>(s) > graph.Size())
-      throw std::invalid_argument("Incorrect vertex number");
+      throw std::out_of_range("Vertex range error");
 
     std::vector<Color> color(graph.Size(), Color::WHITE);
     /* std::vector<int> p(graph.Size(), -1); */
@@ -48,11 +48,10 @@ template<typename ContainerType>
       path.push_back(vertex);
       container.pop();
 
-      // чтобы при поиске в глубину идти от меньшего индекса вершины к большему,
-      // необходимо делать цикл в обратную сторону, но на цели алгоритма это не
-      // влияет, поэтому не буду так делать пока что..
-      // При выполнении поиска в глубину исследуются все ребра, выходящие из
-      // вершины, открытой последней
+      /*
+       * При выполнении поиска в глубину исследуются все ребра, выходящие из
+       * вершины, открытой последней
+       */
       for (std::size_t j = 0; j < graph.Size(); ++j) {
         if (graph[vertex - 1][j] && color[j] == Color::WHITE) {
           color[j] = Color::GRAY;
@@ -78,34 +77,43 @@ std::vector<int> GraphAlgorithms::BreadthFirstSearch(const Graph &graph, int s) 
   return BreadthDepthInterface<s21::queue<int>>(graph, s);
 }
 
-int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph,
-                                                              int s, int f) {
+int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph, int s, int f) {
   const int sz = (int) graph.Size();
   if (sz == 0)
     throw std::invalid_argument("Empty graph");
   if (s < 1 || s > sz || f < 1 || f > sz)
-    throw std::invalid_argument("Vertex is out of boundary");
+    throw std::out_of_range("Vertex range error");
 
   std::vector<int> d(sz, std::numeric_limits<int>::max());
   d[s - 1] = 0;
 
   std::priority_queue<std::pair<int, int>> q;
+  std::vector<Color> colors(sz, Color::WHITE);
+
   q.push(std::make_pair(0, s - 1));
+  colors[s - 1] = Color::GRAY;
 
   while (!q.empty()) {
-    int v = q.top().second, cur_d = -q.top().first;
+    int v = q.top().second;
+    colors[v] = Color::BLACK;
     q.pop();
-    if (cur_d > d[v]) continue;
 
     for (int j = 0; j < sz; ++j) {
       int w = graph[v][j];
       if (w != 0)
         if (d[j] > d[v] + w) {
           d[j] = d[v] + w;
-          q.push(std::make_pair(-d[j], j));
+          if (colors[j] == Color::WHITE) {
+            q.push(std::make_pair(-d[j], j));
+            colors[j] = Color::GRAY;
+          }
         }
     }
   }
+
+  if (d[f - 1] == std::numeric_limits<int>::max())
+    throw std::runtime_error("Path between " + std::to_string(s) + " and " +
+        std::to_string(f) + " does not exist.");
 
   return d[f - 1];
 }
@@ -142,7 +150,7 @@ std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph&
 
   // or make undirect graph from direct, removing const modifier
   if (graph.IsDirect())
-    throw std::invalid_argument("Graph must be undirected.");
+    throw std::invalid_argument("Graph must be undirected");
 
   const int max_int = std::numeric_limits<int>::max();
 
@@ -202,7 +210,7 @@ std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
   for(std::size_t i = 0; i != sz; ++i)
     for(std::size_t j = 0; j != sz; ++j) {
       if (graph[i][j] == 0 && graph[j][i] == 0 && i != j)
-        throw std::invalid_argument("Solution does not exist");
+        throw std::runtime_error("Solution does not exist");
 
       normalized[i][j] = 200.0 / graph[i][j]; // (graph[i][j] - min) / (max - min);
     }

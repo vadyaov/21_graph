@@ -18,29 +18,16 @@ link_directories(./../)
 
 # Граф
 add_executable(
-  graph_test
+  test_graph
   s21_graph_test.cc
-)
-target_link_libraries(
-  graph_test
-  GTest::gtest_main
-  -l:s21_graph.a
-)
-
-include(GoogleTest)
-gtest_discover_tests(graph_test)
-
-# Алгоритмы
-add_executable(
-  algo_test
   s21_graph_algo_test.cc
+  ../graph/s21_graph.cc
+  ../algorithms/s21_graph_algorithms.cc
 )
 target_link_libraries(
-  algo_test
+  test_graph
   GTest::gtest_main
-  -l:s21_graph.a
-  -l:s21_graph_algorithms.a
 )
 
 include(GoogleTest)
-gtest_discover_tests(algo_test)
+gtest_discover_tests(test_graph)
