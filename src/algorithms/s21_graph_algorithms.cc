@@ -210,7 +210,7 @@ std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
   for(std::size_t i = 0; i != sz; ++i)
     for(std::size_t j = 0; j != sz; ++j) {
       if (graph[i][j] == 0 && graph[j][i] == 0 && i != j)
-        throw std::runtime_error("Solution does not exist");
+        throw std::runtime_error("Graph is not full");
 
       normalized[i][j] = 200.0 / graph[i][j]; // (graph[i][j] - min) / (max - min);
     }

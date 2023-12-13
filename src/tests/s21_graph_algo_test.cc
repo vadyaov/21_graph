@@ -251,6 +251,66 @@ TEST(algo_floyd_warsh, t2) {
 
 }
 
+TEST(algo_prim, t1) {
+  const std::string path {"../examples/prim.txt"};
+  Graph g;
+
+  std::string currentWorkingDirectory = std::filesystem::current_path().string();
+
+  std::filesystem::current_path("/home/vadim/Projects/School21/21_graph/src/tests");
+
+  g.LoadGraphFromFile(path);
+
+  std::filesystem::current_path(currentWorkingDirectory);
+
+  EXPECT_EQ(g.IsDirect(), false);
+
+  auto dist = GraphAlgorithms::GetLeastSpanningTree(g);
+
+  std::vector<std::vector<int>> expected {
+      {0, 4, 0, 0, 0, 0, 0, 0, 0},
+      {4, 0, 8, 0, 0, 0, 0, 0, 0},
+      {0, 8, 0, 7, 0, 4, 0, 0, 2},
+      {0, 0, 7, 0, 9, 0, 0, 0, 0},
+      {0, 0, 0, 9, 0, 0, 0, 0, 0},
+      {0, 0, 4, 0, 0, 0, 2, 0, 0},
+      {0, 0, 0, 0, 0, 2, 0, 1, 0},
+      {0, 0, 0, 0, 0, 0, 1, 0, 0},
+      {0, 0, 2, 0, 0, 0, 0, 0, 0}
+  };
+
+  EXPECT_EQ(dist, expected);
+
+}
+
+TEST(algo_prim, t2) {
+  const std::string path {"../examples/prim1.txt"};
+  Graph g;
+
+  std::string currentWorkingDirectory = std::filesystem::current_path().string();
+
+  std::filesystem::current_path("/home/vadim/Projects/School21/21_graph/src/tests");
+
+  g.LoadGraphFromFile(path);
+
+  std::filesystem::current_path(currentWorkingDirectory);
+
+  EXPECT_EQ(g.IsDirect(), false);
+
+  auto dist = GraphAlgorithms::GetLeastSpanningTree(g);
+
+  std::vector<std::vector<int>> expected {
+      {0, 9, 0, 0, 0},
+      {9, 0, 0, 19, 0},
+      {0, 0, 0, 51, 0},
+      {0, 19, 51, 0, 31},
+      {0, 0, 0, 31, 0}
+  };
+
+  EXPECT_EQ(dist, expected);
+
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
 
