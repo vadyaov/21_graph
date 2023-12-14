@@ -4,7 +4,6 @@
 #include <queue>
 #include <cmath>
 #include <random>
-#include <numeric>
 
 #include "stack.h"
 #include "queue.h"
@@ -21,22 +20,18 @@ struct Accessor {
   }
 };
 
-// цвета можно заменить на посещение\непосещение вершины, если не пригодятся
-    // color[u] - цвет каждой вершины u из V[graph]
-    // p[u] - предшественник вершины u
-    // d[u] - расстояние от s до u
 template<typename ContainerType>
   std::vector<int> BreadthDepthInterface(const Graph& graph, int s) {
     if (graph.Empty()) throw std::invalid_argument("Empty graph");
     if (s < 1 || static_cast<std::size_t>(s) > graph.Size())
       throw std::out_of_range("Vertex range error");
 
-    std::vector<Color> color(graph.Size(), Color::WHITE);
+    std::vector<Color> colors(graph.Size(), Color::WHITE);
     /* std::vector<int> p(graph.Size(), -1); */
 
     std::vector<int> path;
 
-    color[s - 1] = Color::GRAY;
+    colors[s - 1] = Color::GRAY;
     /* p[s - 1] = -1; */
 
     ContainerType container;
@@ -49,30 +44,26 @@ template<typename ContainerType>
       container.pop();
 
       /*
-       * При выполнении поиска в глубину исследуются все ребра, выходящие из
-       * вершины, открытой последней
+       * При выполнении поиска в глубину исследуются все ребра,
+       * выходящие из вершины, открытой последней
        */
       for (std::size_t j = 0; j < graph.Size(); ++j) {
-        if (graph[vertex - 1][j] && color[j] == Color::WHITE) {
-          color[j] = Color::GRAY;
+        if (graph[vertex - 1][j] && colors[j] == Color::WHITE) {
+          colors[j] = Color::GRAY;
           container.push(j + 1);
         }
       }
 
-      color[vertex - 1] = Color::BLACK;
+      colors[vertex - 1] = Color::BLACK;
     }
 
     return path;
   }
 
-    // usign stack
-    // момент который мне не нравится: из stack (поиск в глубину ведется от
-    // старшей вершины к младшей, а хотелось бы идти по порядку
 std::vector<int> GraphAlgorithms::DepthFirstSearch(const Graph &graph, int s) {
   return BreadthDepthInterface<s21::stack<int>>(graph, s);
 }
 
-    // usign queue
 std::vector<int> GraphAlgorithms::BreadthFirstSearch(const Graph &graph, int s) {
   return BreadthDepthInterface<s21::queue<int>>(graph, s);
 }
@@ -100,20 +91,20 @@ int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph, int s, i
 
     for (int j = 0; j < sz; ++j) {
       int w = graph[v][j];
-      if (w != 0)
-        if (d[j] > d[v] + w) {
-          d[j] = d[v] + w;
-          if (colors[j] == Color::WHITE) {
-            q.push(std::make_pair(-d[j], j));
-            colors[j] = Color::GRAY;
-          }
+      if (w != 0 && d[j] > d[v] + w) {
+        d[j] = d[v] + w;
+        if (colors[j] == Color::WHITE) {
+          q.push(std::make_pair(-d[j], j));
+          colors[j] = Color::GRAY;
         }
+      }
     }
   }
 
-  if (d[f - 1] == std::numeric_limits<int>::max())
+  if (d[f - 1] == std::numeric_limits<int>::max()) {
     throw std::runtime_error("Path between " + std::to_string(s) + " and " +
         std::to_string(f) + " does not exist.");
+  }
 
   return d[f - 1];
 }
@@ -127,12 +118,14 @@ GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
   const int max_int = std::numeric_limits<int>::max();
 
   std::vector<std::vector<int>> d(sz, std::vector<int>(sz, max_int));
-  for (int i = 0; i < sz; ++i)
-    for (int j = 0; j < sz; ++j)
-      if (graph[i][j]) d[i][j] = graph[i][j];
 
-  for (int i = 0; i < sz; ++i)
+  for (int i = 0; i < sz; ++i) {
+    for (int j = 0; j < sz; ++j) {
+      if (graph[i][j])
+        d[i][j] = graph[i][j];
+    }
     d[i][i] = 0;
+  }
 
   for (int k = 0; k < sz; ++k)
     for (int i = 0; i < sz; ++i)
@@ -148,7 +141,6 @@ std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph&
   if (sz == 0)
     throw std::invalid_argument("Empty graph");
 
-  // or make undirect graph from direct, removing const modifier
   if (graph.IsDirect())
     throw std::invalid_argument("Graph must be undirected");
 
@@ -202,8 +194,6 @@ double RandomValue() {
 
 std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
   const std::size_t sz = graph.Size();
-  /* const double min = graph.MinWeight(); */
-  /* const double max = graph.MaxWeight(); */
   
   std::vector<std::vector<double>> normalized(sz, std::vector<double>(sz));
 
@@ -212,7 +202,7 @@ std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
       if (graph[i][j] == 0 && graph[j][i] == 0 && i != j)
         throw std::runtime_error("Graph is not full");
 
-      normalized[i][j] = 200.0 / graph[i][j]; // (graph[i][j] - min) / (max - min);
+      normalized[i][j] = 200.0 / graph[i][j];
     }
 
   return normalized;
@@ -231,7 +221,7 @@ int Roulette(const std::vector<double>& chance) {
             }
         }
     }
-  /* std::cout << "next point will be " << next_point << "\n\n"; */
+
   return next_point;
 }
 
@@ -325,45 +315,3 @@ GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const 
 
   return min_path;
 }
-
-        /* std::cout << "Distance between " << prev_point << " and " << curr_point << " is " << dist[prev_point][curr_point] << std::endl; */
-
-
-  /* std::cout << "Distances: \n"; */
-  /* for (int i = 0; i < sz; ++i) { */
-  /*   fero[i][i] = 0; */
-  /*   for (int j = 0; j < sz; ++j) */
-  /*     std::cout << dist[i][j] << " "; */
-  /*   std::cout << std::endl; */
-  /* } */
-  /* std::cout << std::endl; */
-
-    /* for (std::size_t p = 0; p < ants_path.size(); ++p) { */
-    /*   std::cout << "\nANT " << p << ":\npath: "; */
-    /*   for (int v : ants_path[p].vertices) */
-    /*     std::cout << v << " "; */
-    /*   std::cout << "\ndistance: " << ants_path[p].distance << "\n"; */
-    /* } */
-
-
-        /* std::cout << "chances: "; */
-        /* for (auto p : chance) */
-        /*   std::cout << p << " "; */
-        /* std::cout << std::endl; */
-        /* std::cout << "chances: "; */
-        /* for (auto p : chance) */
-        /*   std::cout << p << " "; */
-        /* std::cout << std::endl; */
-
-        /* std::cout << "wishes: "; */
-        /* for (auto w : wish) */
-        /*   std::cout << w << " "; */
-        /* std::cout << std::endl; */
-
-/*   std::cout << "FEROMONES:\n"; */
-/*   for (int i = 0; i != sz; ++i) { */
-/*     for (int j = 0; j != sz; ++j) */
-/*       std::cout << fero[i][j] << " "; */
-/*     std::cout << std::endl; */
-/*   } */
-

@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -Werror -Wextra -Wpedantic -std=c++17
+CXXFLAGS = -Wall -Werror -Wextra -Wpedantic -std=c++17 #-fsanitize=address -g
 
 GRAPH_DIR = ./graph
 GRAPH_SRC = $(GRAPH_DIR)/s21_graph.cc
@@ -12,7 +12,7 @@ ALGO_OBJ = $(ALGO_DIR)/s21_graph_algorithms.o
 GCOV_TARGET = ./coverage
 COVERFLAGS = -fprofile-arcs -ftest-coverage
 
-all: s21_graph.a #test
+all: clean test
 
 test: s21_graph.a s21_graph_algorithms.a
 	@mkdir -p examples/dots/
@@ -23,10 +23,11 @@ test: s21_graph.a s21_graph_algorithms.a
 gcov_report: $(GCOV_TARGET)
 
 $(GCOV_TARGET): CXXFLAGS += $(COVERFLAGS)
-$(GCOV_TARGET): clean test
-	lcov --rc lcov_branch_coverage=1 --capture --directory . --output-file coverage.info
+$(GCOV_TARGET): test Makefile
+	lcov --rc lcov_branch_coverage=1 --capture --directory . --output-file coverage.info \
+		--no-external --exclude "$(CURDIR)/tests/*"
 	genhtml coverage.info --output-directory coverage_report
-	lcov --remove coverage.info '*/usr/*' '*/gtest/*' --output-file coverage_filtered.info
+	open ./coverage_report/index.html
 
 s21_graph.a: $(GRAPH_OBJ)
 	ar -rcs $@ $< 
@@ -41,8 +42,8 @@ $(ALGO_OBJ): $(ALGO_SRC)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 clean:
-	rm -f $(GRAPH_OBJ) $(ALGO_OBJ) *.a
-	rm -rf tests/build/ coverage*
-	rm -f graph/*gcno algorithms/*gcda
-	rm -f graph/*gcda algorithms/*gcno
-	rm -f ./examples/dots/*
+	@rm -f $(GRAPH_OBJ) $(ALGO_OBJ) *.a
+	@rm -rf tests/build/ coverage*
+	@rm -f graph/*gcno algorithms/*gcda
+	@rm -f graph/*gcda algorithms/*gcno
+	@rm -f ./examples/dots/*

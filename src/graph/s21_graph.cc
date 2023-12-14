@@ -1,6 +1,5 @@
 #include "s21_graph.h"
 
-/* #include <iomanip> */
 #include <algorithm>
 
 void Graph::LoadGraphFromFile(const std::string& filename) {
@@ -78,8 +77,6 @@ bool Graph::Directed() const noexcept {
 
   for (std::size_t i = 0; i < size; ++i) {
     for (std::size_t j = 0; j < size; ++j) {
-
-        // only allows to detect directed and undirected graphs (not mixed)
       if (i != j && adjacent_[i * size + j] != adjacent_[j * size + i])
         return true;
     }
@@ -99,16 +96,3 @@ bool Graph::Empty() const noexcept {
 std::size_t Graph::Size() const noexcept {
   return size;
 }
-
-/* std::ostream& operator<<(std::ostream& os, const Graph& g) { */
-/*   for (std::size_t i = 0, j = 1; i < g.size * g.size; ++i, ++j) { */
-/*     os << std::setw(4); */
-/*     os << g.adjacent_[i]; */
-/*     if (j == g.size) { */
-/*       os << std::endl; */
-/*       j = 0; */
-/*     } */
-/*   } */
-
-/*   return os; */
-/* } */

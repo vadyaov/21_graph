@@ -311,6 +311,48 @@ TEST(algo_prim, t2) {
 
 }
 
+TEST(algo_aco, t1) {
+  const std::string path {"../examples/graph_0.txt"};
+  Graph g;
+
+  std::string currentWorkingDirectory = std::filesystem::current_path().string();
+
+  std::filesystem::current_path("/home/vadim/Projects/School21/21_graph/src/tests");
+
+  g.LoadGraphFromFile(path);
+
+  std::filesystem::current_path(currentWorkingDirectory);
+
+  EXPECT_EQ(g.IsDirect(), false);
+
+  GraphAlgorithms::TsmResult cycle = GraphAlgorithms::SolveTravelingSalesmanProblem(g);
+
+  double expected = 253;
+
+  EXPECT_EQ(cycle.distance, expected);
+}
+
+TEST(algo_aco, t2) {
+  const std::string path {"../examples/circle_graph.txt"};
+  Graph g;
+
+  std::string currentWorkingDirectory = std::filesystem::current_path().string();
+
+  std::filesystem::current_path("/home/vadim/Projects/School21/21_graph/src/tests");
+
+  g.LoadGraphFromFile(path);
+
+  std::filesystem::current_path(currentWorkingDirectory);
+
+  EXPECT_EQ(g.IsDirect(), false);
+
+  GraphAlgorithms::TsmResult cycle = GraphAlgorithms::SolveTravelingSalesmanProblem(g);
+
+  double expected = 70;
+
+  EXPECT_EQ(cycle.distance, expected);
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
 
