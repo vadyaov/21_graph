@@ -10,6 +10,8 @@ class GraphAlgorithms {
       double distance{0};
     };
 
+    constexpr static int MAX_ITERATIONS = 100;
+
     // usign stack
     static std::vector<int> DepthFirstSearch(const Graph& graph, int s);
 

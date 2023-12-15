@@ -61,8 +61,6 @@ void Console::Run() {
 		
 	menu_win = newwin(heigh, width, starty, startx);
 	keypad(menu_win, TRUE);
-	mvprintw(0, 5, "Use arrow keys to go up and down, Press enter to select a choice");
-	refresh();
 
 	print_menu(menu_win, highlight, choices);
 	while(1) {

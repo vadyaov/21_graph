@@ -5,8 +5,8 @@
 #include <cmath>
 #include <random>
 
-#include "stack.h"
-#include "queue.h"
+#include "cpp2lib/stack.h"
+#include "cpp2lib/queue.h"
 
 enum class Color {WHITE, GRAY, BLACK};
 
@@ -137,13 +137,13 @@ GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
 }
 
 std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph& graph) {
-  const int sz = (int) graph.Size();
-  if (sz == 0)
+  if (graph.Empty())
     throw std::invalid_argument("Empty graph");
 
   if (graph.IsDirect())
     throw std::invalid_argument("Graph must be undirected");
 
+  const int sz = (int) graph.Size();
   const int max_int = std::numeric_limits<int>::max();
 
   std::vector<std::vector<int>> A(sz, std::vector<int>(sz, 0));
@@ -199,9 +199,10 @@ std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
 
   for(std::size_t i = 0; i != sz; ++i)
     for(std::size_t j = 0; j != sz; ++j) {
-      if (graph[i][j] == 0 && graph[j][i] == 0 && i != j)
+      if ((graph[i][j] == 0 || graph[j][i] == 0) && i != j)
         throw std::runtime_error("Graph is not full");
 
+      // line with magic value
       normalized[i][j] = 200.0 / graph[i][j];
     }
 
@@ -212,13 +213,11 @@ int Roulette(const std::vector<double>& chance) {
     int next_point = -1;
     double cumulative_probability = 0.0;
 
-    for (std::size_t i = 0; i < chance.size(); ++i) {
+    for (std::size_t i = 0; i < chance.size() && next_point == -1; ++i) {
         if (chance[i] > 0) {
             cumulative_probability += chance[i];
-            if (RandomValue() <= cumulative_probability) {
+            if (RandomValue() <= cumulative_probability)
                 next_point = static_cast<int>(i);
-                break;
-            }
         }
     }
 
@@ -226,7 +225,7 @@ int Roulette(const std::vector<double>& chance) {
 }
 
 GraphAlgorithms::TsmResult
-MinimalSolution (const std::vector<GraphAlgorithms::TsmResult>& ants_data) {
+MinimalSolution(const std::vector<GraphAlgorithms::TsmResult>& ants_data) {
   GraphAlgorithms::TsmResult min = ants_data[0];
 
   for (std::size_t i = 1; i != ants_data.size(); ++i) {
@@ -237,39 +236,48 @@ MinimalSolution (const std::vector<GraphAlgorithms::TsmResult>& ants_data) {
   return min;
 }
 
+void UpdateFeromones(std::vector<std::vector<double>>& feromones,
+                     std::vector<GraphAlgorithms::TsmResult>& paths, int size,
+                     double Q, double reduce) {
+  for (int i = 0; i != size; ++i)
+    for (int j = 0; j != size; ++j)
+      feromones[i][j] *= reduce;
+
+  for (int ant = 0; ant < size; ++ant) {
+    double delta_fero = Q / paths[ant].distance;
+    for (std::size_t i = 0; i < paths[ant].vertices.size() - 1; ++i) {
+      feromones[paths[ant].vertices[i]][paths[ant].vertices[i + 1]] += delta_fero;
+    }
+  }
+}
+
 GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const Graph &graph) {
   const int sz = graph.Size();
   if (sz == 0)
     throw std::invalid_argument("Empty graph");
 
   TsmResult min_path {{}, std::numeric_limits<double>::max()};
-  constexpr int MAX_ITERATIONS = 100;
 
-  const int ants = sz;
+  const double Q = 320.0;
+  const double fero_reduce = 0.6;
 
   const double alpha = 1.0;
   const double beta = 4.0;
-  const double Q = 320.0;
-
-  const double fero_reduce = 0.6;
 
   std::vector<std::vector<double>> dist = NormalizedGraph(graph);
   std::vector<std::vector<double>> fero(sz, std::vector<double>(sz, 0.2));
 
-  std::vector<TsmResult> ants_path;
-
   for (int iter = 0; iter < MAX_ITERATIONS; ++iter) {
 
-    ants_path = std::vector<TsmResult>(ants, {std::vector<int>(sz + 1, 0), 0});
+    std::vector<TsmResult> ants_path(sz, {std::vector<int>(sz + 1, 0), 0});
 
-    for (int ant = 0; ant < ants; ++ant) {
+    for (int ant = 0; ant < sz; ++ant) {
       int curr_point = ant;
       std::vector<bool> visited(sz, false);
 
       ants_path[ant].vertices[0] = ants_path[ant].vertices[sz] = curr_point;
 
       for (int i = 0; i < sz - 1; ++i) {
-        
         visited[curr_point] = true;
 
         std::vector<double> wish(sz);
@@ -297,16 +305,7 @@ GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const 
       ants_path[ant].distance += graph[curr_point][ant];
     }
 
-    for (int i = 0; i != sz; ++i)
-      for (int j = 0; j != sz; ++j)
-        fero[i][j] *= fero_reduce;
-
-    for (int ant = 0; ant < ants; ++ant) {
-      double delta_fero = Q / ants_path[ant].distance;
-      for (std::size_t i = 0; i < ants_path[ant].vertices.size() - 1; ++i) {
-        fero[ants_path[ant].vertices[i]][ants_path[ant].vertices[i + 1]] += delta_fero;
-      }
-    }
+    UpdateFeromones(fero, ants_path, sz, Q, fero_reduce);
 
     if (min_path.distance > MinimalSolution(ants_path).distance)
       min_path = MinimalSolution(ants_path);

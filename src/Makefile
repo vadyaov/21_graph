@@ -41,9 +41,14 @@ $(GRAPH_OBJ): $(GRAPH_SRC)
 $(ALGO_OBJ): $(ALGO_SRC)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
+app: s21_graph.a s21_graph_algorithms.a
+	$(CXX) $(CXXFLAGS) console/*.cc $? -lncurses -o $@.out
+	./$@.out
+
 clean:
 	@rm -f $(GRAPH_OBJ) $(ALGO_OBJ) *.a
 	@rm -rf tests/build/ coverage*
 	@rm -f graph/*gcno algorithms/*gcda
 	@rm -f graph/*gcda algorithms/*gcno
 	@rm -f ./examples/dots/*
+	@rm -f app.out
