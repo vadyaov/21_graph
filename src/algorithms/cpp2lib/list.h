@@ -2,9 +2,9 @@
 #define _STL_CONTAINERS_CONTAINERS_LIST_H_
 
 #include <initializer_list>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
-#include <iostream>
 
 namespace s21 {
 
@@ -27,7 +27,8 @@ class list {
   typedef typename A::const_reference const_reference;
   typedef typename A::difference_type difference_type;
   typedef typename A::size_type size_type;
-  using NodeAllocator = typename std::allocator_traits<A>::template rebind_alloc<list_node<T>>;
+  using NodeAllocator =
+      typename std::allocator_traits<A>::template rebind_alloc<list_node<T>>;
 
   typedef list_node<T> node;
   typedef list_node<T> *node_ptr;
@@ -44,8 +45,7 @@ class list {
     for (size_type i = 0; i < count; ++i) push_back(value);
   }
 
-  explicit list(size_type count)
-      : list(count, T()) {}
+  explicit list(size_type count) : list(count, T()) {}
 
   list(const list &other) : list() {
     for (node_ptr i = other.head; i; i = i->next) push_back(i->key);
@@ -85,8 +85,7 @@ class list {
     for (InputIt i = first; i != last; ++i) push_back(*i);
   }
 
-  list(std::initializer_list<T> init)
-      : list(init.begin(), init.end()) {}
+  list(std::initializer_list<T> init) : list(init.begin(), init.end()) {}
 
   ~list() { dealloc(0); }
 
@@ -174,7 +173,7 @@ class list {
       node_ptr tmp = pos.get_ptr();
       node_ptr new_node = allo.allocate(1);
       /* allocator.construct(&new_node->key, value); */
-      ::new((void*)&new_node->key) T(value);
+      ::new ((void *)&new_node->key) T(value);
       new_node->prev = tmp->prev;
       new_node->next = tmp;
       tmp->prev->next = new_node;
@@ -197,7 +196,7 @@ class list {
       node_ptr tmp = pos.get_ptr();
       node_ptr new_node = allo.allocate(1);
       /* allocator.construct(&new_node->key, std::move(value)); */
-      ::new((void*)&new_node->key) T(std::move(value));
+      ::new ((void *)&new_node->key) T(std::move(value));
       new_node->prev = tmp->prev;
       new_node->next = tmp;
       tmp->prev->next = new_node;
@@ -258,7 +257,8 @@ class list {
   template <class... Args>
   iterator emplace(iterator pos, Args &&...args) {
     iterator it(pos.get_ptr());
-    /* for (auto &&item : {std::forward<Args>(args)...}) single_emplace(pos, item); */
+    /* for (auto &&item : {std::forward<Args>(args)...}) single_emplace(pos,
+     * item); */
     if (it == begin()) {
       emplace_front(args...);
       it = iterator(head);
@@ -270,7 +270,7 @@ class list {
       node_ptr new_node = allo.allocate(1);
       try {
         /* allocator.construct(&new_node->key, std::forward<Args>(args)...); */
-        ::new((void*)&new_node->key) T(std::forward<Args>(args)...);
+        ::new ((void *)&new_node->key) T(std::forward<Args>(args)...);
         new_node->prev = tmp->prev;
         new_node->next = tmp;
         tmp->prev->next = new_node;
@@ -311,7 +311,7 @@ class list {
     node_ptr new_node = allo.allocate(1);
     try {
       /* allocator.construct(&new_node->key, value); */
-      ::new((void*)&new_node->key) T(value);
+      ::new ((void *)&new_node->key) T(value);
       new_node->prev = tail;
       new_node->next = nullptr;
       if (tail != nullptr) tail->next = new_node;
@@ -331,7 +331,7 @@ class list {
     node_ptr new_node = allo.allocate(1);
     try {
       /* allocator.construct(&new_node->key, std::move(value)); */
-      ::new((void*)&new_node->key) T(std::move(value));
+      ::new ((void *)&new_node->key) T(std::move(value));
       new_node->prev = tail;
       new_node->next = nullptr;
       if (tail) tail->next = new_node;
@@ -352,7 +352,7 @@ class list {
     node_ptr new_node = allo.allocate(1);
     try {
       /* allocator.construct(&new_node->key, std::forward<Args>(args)...); */
-      ::new((void*)&new_node->key) T(std::forward<Args>(args)...);
+      ::new ((void *)&new_node->key) T(std::forward<Args>(args)...);
       new_node->prev = tail;
       new_node->next = nullptr;
       if (tail) tail->next = new_node;
@@ -375,7 +375,7 @@ class list {
     node_ptr new_node = allo.allocate(1);
     try {
       /* allocator.construct(&new_node->key, value); */
-      ::new((void*)&new_node->key) T(value);
+      ::new ((void *)&new_node->key) T(value);
       new_node->prev = nullptr;
       new_node->next = head;
       if (head) head->prev = new_node;
@@ -395,7 +395,7 @@ class list {
     node_ptr new_node = allo.allocate(1);
     try {
       /* allocator.construct(&new_node->key, std::move(value)); */
-      ::new((void*)&new_node->key) T(std::move(value));
+      ::new ((void *)&new_node->key) T(std::move(value));
       new_node->prev = nullptr;
       new_node->next = head;
       if (head) head->prev = new_node;
@@ -416,7 +416,7 @@ class list {
     node_ptr new_node = allo.allocate(1);
     try {
       /* allocator.construct(&new_node->key, std::forward<Args>(args)...); */
-      ::new((void*)&new_node->key) T(std::forward<Args>(args)...);
+      ::new ((void *)&new_node->key) T(std::forward<Args>(args)...);
       new_node->prev = nullptr;
       new_node->next = head;
       if (head) head->prev = new_node;
@@ -437,7 +437,7 @@ class list {
     node_ptr ptr = head;
     head = head->next;
     if (head) head->prev = nullptr;
-      std::allocator_traits<A>::destroy(allocator, ptr);
+    std::allocator_traits<A>::destroy(allocator, ptr);
     /* allo.destroy(ptr); */
     /* ptr->~T(); */
     allo.deallocate(ptr, 1);
@@ -806,56 +806,53 @@ class list {
     return slow;
   }
 
-node_ptr Merge(node_ptr leftHead, node_ptr rightHead) {
-  node_ptr mergedHead = nullptr;
-  node_ptr tail_ = nullptr;
+  node_ptr Merge(node_ptr leftHead, node_ptr rightHead) {
+    node_ptr mergedHead = nullptr;
+    node_ptr tail_ = nullptr;
 
-  if (leftHead == nullptr)
-    return rightHead;
-  if (rightHead == nullptr)
-    return leftHead;
+    if (leftHead == nullptr) return rightHead;
+    if (rightHead == nullptr) return leftHead;
 
-  if (leftHead->key < rightHead->key) {
-    mergedHead = leftHead;
-    mergedHead->prev = nullptr;
-    leftHead = leftHead->next;
-  } else {
-    mergedHead = rightHead;
-    mergedHead->prev = nullptr;
-    rightHead = rightHead->next;
-  }
-
-  tail_ = mergedHead;
-
-  while (leftHead != nullptr && rightHead != nullptr) {
     if (leftHead->key < rightHead->key) {
-      tail_->next = leftHead;
-      leftHead->prev = tail_;
+      mergedHead = leftHead;
+      mergedHead->prev = nullptr;
       leftHead = leftHead->next;
     } else {
-      tail_->next = rightHead;
-      rightHead->prev = tail_;
+      mergedHead = rightHead;
+      mergedHead->prev = nullptr;
       rightHead = rightHead->next;
     }
 
-    tail_ = tail_->next;
+    tail_ = mergedHead;
+
+    while (leftHead != nullptr && rightHead != nullptr) {
+      if (leftHead->key < rightHead->key) {
+        tail_->next = leftHead;
+        leftHead->prev = tail_;
+        leftHead = leftHead->next;
+      } else {
+        tail_->next = rightHead;
+        rightHead->prev = tail_;
+        rightHead = rightHead->next;
+      }
+
+      tail_ = tail_->next;
+    }
+
+    if (leftHead != nullptr) {
+      tail_->next = leftHead;
+      leftHead->prev = tail_;
+    } else {
+      tail_->next = rightHead;
+      rightHead->prev = tail_;
+    }
+
+    while (tail_->next != nullptr) tail_ = tail_->next;
+
+    tail = tail_;
+
+    return mergedHead;
   }
-
-  if (leftHead != nullptr) {
-    tail_->next = leftHead;
-    leftHead->prev = tail_;
-  } else {
-    tail_->next = rightHead;
-    rightHead->prev = tail_;
-  }
-
-  while (tail_->next != nullptr)
-    tail_ = tail_->next;
-
-  tail = tail_;
-
-  return mergedHead;
-}
 
   void dealloc(size_type count) {
     if (tail && sz > count) {

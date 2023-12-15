@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.14)
+
 project(tests)
 
-# GoogleTest requires at least C++14
+#GoogleTest requires at least C++ 14
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
-FetchContent_Declare(
-  googletest
+
+FetchContent_Declare(googletest
   URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
 )
 FetchContent_MakeAvailable(googletest)
@@ -16,18 +17,14 @@ enable_testing()
 
 link_directories(./../)
 
-# Граф
-add_executable(
-  test_graph
-  s21_graph_test.cc
-  s21_graph_algo_test.cc
+#Граф
+add_executable(test_graph
+  s21_graph_test.cc s21_graph_algo_test.cc
   ../graph/s21_graph.cc
   ../algorithms/s21_graph_algorithms.cc
 )
-target_link_libraries(
-  test_graph
-  GTest::gtest_main
-)
+
+target_link_libraries(test_graph GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(test_graph)

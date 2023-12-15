@@ -1,10 +1,10 @@
 #ifndef _STL_CONTAINERS_CONTAINERS_VECTOR_H_
 #define _STL_CONTAINERS_CONTAINERS_VECTOR_H_
 
+#include <algorithm>
 #include <initializer_list>
 #include <memory>
 #include <stdexcept>
-#include <algorithm>
 
 namespace s21 {
 
@@ -90,8 +90,8 @@ class vector {
   }
 
   ~vector() {
-    for (pointer p = vb.elem; p != vb.space; ++p) 
-        std::allocator_traits<A>::destroy(vb.alloc, p);
+    for (pointer p = vb.elem; p != vb.space; ++p)
+      std::allocator_traits<A>::destroy(vb.alloc, p);
     vb.space = vb.elem;
   }
 
@@ -109,7 +109,7 @@ class vector {
     vb.alloc = other.vb.alloc;
     if (osz <= sz) {
       std::copy(other.begin(), other.begin() + osz, vb.elem);
-      for (pointer p = vb.elem + osz; p != vb.space; ++p) 
+      for (pointer p = vb.elem + osz; p != vb.space; ++p)
         std::allocator_traits<A>::destroy(vb.alloc, p);
 
     } else {
@@ -193,7 +193,9 @@ class vector {
   bool empty() const noexcept { return !size(); };
 
   size_type size() const noexcept { return vb.space - vb.elem; }
-  size_type max_size() const { return std::allocator_traits<A>::max_size(vb.alloc); }
+  size_type max_size() const {
+    return std::allocator_traits<A>::max_size(vb.alloc);
+  }
 
   void reserve(size_type newalloc) {
     if (newalloc <= capacity()) return;
@@ -274,7 +276,7 @@ class vector {
     std::allocator_traits<A>::destroy(vb.alloc, vb.elem + index);
     for (auto it = pos; it < end() - 1; ++it)
       /* vb.alloc.construct(std::addressof(*it), *(it + 1)); */
-      ::new((void*)std::addressof(*it)) T(*(it + 1));
+      ::new ((void*)std::addressof(*it)) T(*(it + 1));
     /* vb.alloc.destroy(vb.space - 1); */
     std::allocator_traits<A>::destroy(vb.alloc, vb.space - 1);
     vb.space--;
@@ -332,7 +334,7 @@ class vector {
       } else {
         for (pointer p = vb.elem + newsize; p != vb.elem + size(); ++p)
           /* vb.alloc.destroy(p); */
-        std::allocator_traits<A>::destroy(vb.alloc, p);
+          std::allocator_traits<A>::destroy(vb.alloc, p);
       }
       vb.space = vb.elem + newsize;
     }

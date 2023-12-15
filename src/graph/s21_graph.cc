@@ -24,10 +24,12 @@ void Graph::LoadGraphFromFile(const std::string& filename) {
 
 std::string GetName(const std::string& filename) {
   std::string name;
-  std::string::const_iterator it = filename.begin() + filename.find_last_of('.') - 1;
-  if (it < filename.begin()) throw std::invalid_argument("Incorrect file extension");
+  std::string::const_iterator it =
+      filename.begin() + filename.find_last_of('.') - 1;
+  if (it < filename.begin())
+    throw std::invalid_argument("Incorrect file extension");
 
-  for (;it >= filename.cbegin() && *it != '/'; --it) {
+  for (; it >= filename.cbegin() && *it != '/'; --it) {
     name.insert(name.begin(), *it);
   }
 
@@ -74,7 +76,6 @@ void Graph::ExportGraphToDot(const std::string& filename) const {
 }
 
 bool Graph::Directed() const noexcept {
-
   for (std::size_t i = 0; i < size; ++i) {
     for (std::size_t j = 0; j < size; ++j) {
       if (i != j && adjacent_[i * size + j] != adjacent_[j * size + i])
@@ -85,14 +86,8 @@ bool Graph::Directed() const noexcept {
   return false;
 }
 
-bool Graph::IsDirect() const noexcept {
-  return directed;
-}
+bool Graph::IsDirect() const noexcept { return directed; }
 
-bool Graph::Empty() const noexcept {
-  return size == 0 || adjacent_.empty();
-}
+bool Graph::Empty() const noexcept { return size == 0 || adjacent_.empty(); }
 
-std::size_t Graph::Size() const noexcept {
-  return size;
-}
+std::size_t Graph::Size() const noexcept { return size; }

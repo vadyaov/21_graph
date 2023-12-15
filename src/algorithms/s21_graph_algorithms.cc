@@ -1,77 +1,74 @@
 #include "s21_graph_algorithms.h"
 
+#include <cmath>
 #include <limits>
 #include <queue>
-#include <cmath>
 #include <random>
 
-#include "cpp2lib/stack.h"
 #include "cpp2lib/queue.h"
+#include "cpp2lib/stack.h"
 
-enum class Color {WHITE, GRAY, BLACK};
+enum class Color { WHITE, GRAY, BLACK };
 
 struct Accessor {
-  static int Get(const s21::stack<int>& s) {
-    return s.top();
-  }
+  static int Get(const s21::stack<int>& s) { return s.top(); }
 
-  static int Get(const s21::queue<int>& s) {
-    return s.front();
-  }
+  static int Get(const s21::queue<int>& s) { return s.front(); }
 };
 
-template<typename ContainerType>
-  std::vector<int> BreadthDepthInterface(const Graph& graph, int s) {
-    if (graph.Empty()) throw std::invalid_argument("Empty graph");
-    if (s < 1 || static_cast<std::size_t>(s) > graph.Size())
-      throw std::out_of_range("Vertex range error");
+template <typename ContainerType>
+std::vector<int> BreadthDepthInterface(const Graph& graph, int s) {
+  if (graph.Empty()) throw std::invalid_argument("Empty graph");
+  if (s < 1 || static_cast<std::size_t>(s) > graph.Size())
+    throw std::out_of_range("Vertex range error");
 
-    std::vector<Color> colors(graph.Size(), Color::WHITE);
-    /* std::vector<int> p(graph.Size(), -1); */
+  std::vector<Color> colors(graph.Size(), Color::WHITE);
+  /* std::vector<int> p(graph.Size(), -1); */
 
-    std::vector<int> path;
+  std::vector<int> path;
 
-    colors[s - 1] = Color::GRAY;
-    /* p[s - 1] = -1; */
+  colors[s - 1] = Color::GRAY;
+  /* p[s - 1] = -1; */
 
-    ContainerType container;
-    container.push(s);
+  ContainerType container;
+  container.push(s);
 
-    while (!container.empty()) {
-      int vertex = Accessor::Get(container);
+  while (!container.empty()) {
+    int vertex = Accessor::Get(container);
 
-      path.push_back(vertex);
-      container.pop();
+    path.push_back(vertex);
+    container.pop();
 
-      /*
-       * При выполнении поиска в глубину исследуются все ребра,
-       * выходящие из вершины, открытой последней
-       */
-      for (std::size_t j = 0; j < graph.Size(); ++j) {
-        if (graph[vertex - 1][j] && colors[j] == Color::WHITE) {
-          colors[j] = Color::GRAY;
-          container.push(j + 1);
-        }
+    /*
+     * При выполнении поиска в глубину исследуются все ребра,
+     * выходящие из вершины, открытой последней
+     */
+    for (std::size_t j = 0; j < graph.Size(); ++j) {
+      if (graph[vertex - 1][j] && colors[j] == Color::WHITE) {
+        colors[j] = Color::GRAY;
+        container.push(j + 1);
       }
-
-      colors[vertex - 1] = Color::BLACK;
     }
 
-    return path;
+    colors[vertex - 1] = Color::BLACK;
   }
 
-std::vector<int> GraphAlgorithms::DepthFirstSearch(const Graph &graph, int s) {
+  return path;
+}
+
+std::vector<int> GraphAlgorithms::DepthFirstSearch(const Graph& graph, int s) {
   return BreadthDepthInterface<s21::stack<int>>(graph, s);
 }
 
-std::vector<int> GraphAlgorithms::BreadthFirstSearch(const Graph &graph, int s) {
+std::vector<int> GraphAlgorithms::BreadthFirstSearch(const Graph& graph,
+                                                     int s) {
   return BreadthDepthInterface<s21::queue<int>>(graph, s);
 }
 
-int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph, int s, int f) {
-  const int sz = (int) graph.Size();
-  if (sz == 0)
-    throw std::invalid_argument("Empty graph");
+int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph& graph, int s,
+                                                    int f) {
+  const int sz = (int)graph.Size();
+  if (sz == 0) throw std::invalid_argument("Empty graph");
   if (s < 1 || s > sz || f < 1 || f > sz)
     throw std::out_of_range("Vertex range error");
 
@@ -103,7 +100,7 @@ int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph, int s, i
 
   if (d[f - 1] == std::numeric_limits<int>::max()) {
     throw std::runtime_error("Path between " + std::to_string(s) + " and " +
-        std::to_string(f) + " does not exist.");
+                             std::to_string(f) + " does not exist.");
   }
 
   return d[f - 1];
@@ -112,8 +109,7 @@ int GraphAlgorithms::GetShortestPathBetweenVertices(const Graph &graph, int s, i
 std::vector<std::vector<int>>
 GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
   const int sz = graph.Size();
-  if (sz == 0)
-    throw std::invalid_argument("Empty graph");
+  if (sz == 0) throw std::invalid_argument("Empty graph");
 
   const int max_int = std::numeric_limits<int>::max();
 
@@ -121,8 +117,7 @@ GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
 
   for (int i = 0; i < sz; ++i) {
     for (int j = 0; j < sz; ++j) {
-      if (graph[i][j])
-        d[i][j] = graph[i][j];
+      if (graph[i][j]) d[i][j] = graph[i][j];
     }
     d[i][i] = 0;
   }
@@ -136,14 +131,15 @@ GraphAlgorithms::GetShortestPathsBetweenAllVertices(const Graph& graph) {
   return d;
 }
 
-std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph& graph) {
-  if (graph.Empty())
-    throw std::invalid_argument("Empty graph");
+std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(
+    const Graph& graph) {
+  if (graph.Empty()) throw std::invalid_argument("Empty graph");
 
-  if (graph.IsDirect())
-    throw std::invalid_argument("Graph must be undirected");
+  if (graph.IsDirect()) throw std::invalid_argument("Graph must be undirected");
 
-  const int sz = (int) graph.Size();
+  using ipair = std::pair<int, int>;
+
+  const int sz = (int)graph.Size();
   const int max_int = std::numeric_limits<int>::max();
 
   std::vector<std::vector<int>> A(sz, std::vector<int>(sz, 0));
@@ -154,8 +150,7 @@ std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph&
   std::vector<bool> used(sz);
   std::vector<int> p(sz, -1);
 
-  std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>,
-    std::greater<std::pair<int, int>>> Q;
+  std::priority_queue<ipair, std::vector<ipair>, std::greater<ipair>> Q;
   Q.push(std::make_pair(key[0], 0));
 
   while (!Q.empty()) {
@@ -168,8 +163,7 @@ std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph&
 
     used[u] = true;
 
-    if (p[u] != -1)
-      A[p[u]][u] = A[u][p[u]] = graph[u][p[u]];
+    if (p[u] != -1) A[p[u]][u] = A[u][p[u]] = graph[u][p[u]];
 
     for (int j = 0; j != sz; ++j)
       if (graph[u][j] != 0)
@@ -178,7 +172,6 @@ std::vector<std::vector<int>> GraphAlgorithms::GetLeastSpanningTree(const Graph&
           p[j] = u;
           Q.push(std::make_pair(key[j], j));
         }
-
   }
 
   return A;
@@ -194,11 +187,11 @@ double RandomValue() {
 
 std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
   const std::size_t sz = graph.Size();
-  
+
   std::vector<std::vector<double>> normalized(sz, std::vector<double>(sz));
 
-  for(std::size_t i = 0; i != sz; ++i)
-    for(std::size_t j = 0; j != sz; ++j) {
+  for (std::size_t i = 0; i != sz; ++i)
+    for (std::size_t j = 0; j != sz; ++j) {
       if ((graph[i][j] == 0 || graph[j][i] == 0) && i != j)
         throw std::runtime_error("Graph is not full");
 
@@ -210,27 +203,26 @@ std::vector<std::vector<double>> NormalizedGraph(const Graph& graph) {
 }
 
 int Roulette(const std::vector<double>& chance) {
-    int next_point = -1;
-    double cumulative_probability = 0.0;
+  int next_point = -1;
+  double cumulative_probability = 0.0;
 
-    for (std::size_t i = 0; i < chance.size() && next_point == -1; ++i) {
-        if (chance[i] > 0) {
-            cumulative_probability += chance[i];
-            if (RandomValue() <= cumulative_probability)
-                next_point = static_cast<int>(i);
-        }
+  for (std::size_t i = 0; i < chance.size() && next_point == -1; ++i) {
+    if (chance[i] > 0) {
+      cumulative_probability += chance[i];
+      if (RandomValue() <= cumulative_probability)
+        next_point = static_cast<int>(i);
     }
+  }
 
   return next_point;
 }
 
-GraphAlgorithms::TsmResult
-MinimalSolution(const std::vector<GraphAlgorithms::TsmResult>& ants_data) {
+GraphAlgorithms::TsmResult MinimalSolution(
+    const std::vector<GraphAlgorithms::TsmResult>& ants_data) {
   GraphAlgorithms::TsmResult min = ants_data[0];
 
   for (std::size_t i = 1; i != ants_data.size(); ++i) {
-    if (ants_data[i].distance < min.distance)
-      min = ants_data[i];
+    if (ants_data[i].distance < min.distance) min = ants_data[i];
   }
 
   return min;
@@ -240,23 +232,23 @@ void UpdateFeromones(std::vector<std::vector<double>>& feromones,
                      std::vector<GraphAlgorithms::TsmResult>& paths, int size,
                      double Q, double reduce) {
   for (int i = 0; i != size; ++i)
-    for (int j = 0; j != size; ++j)
-      feromones[i][j] *= reduce;
+    for (int j = 0; j != size; ++j) feromones[i][j] *= reduce;
 
   for (int ant = 0; ant < size; ++ant) {
     double delta_fero = Q / paths[ant].distance;
     for (std::size_t i = 0; i < paths[ant].vertices.size() - 1; ++i) {
-      feromones[paths[ant].vertices[i]][paths[ant].vertices[i + 1]] += delta_fero;
+      feromones[paths[ant].vertices[i]][paths[ant].vertices[i + 1]] +=
+          delta_fero;
     }
   }
 }
 
-GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const Graph &graph) {
+GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(
+    const Graph& graph) {
   const int sz = graph.Size();
-  if (sz == 0)
-    throw std::invalid_argument("Empty graph");
+  if (sz == 0) throw std::invalid_argument("Empty graph");
 
-  TsmResult min_path {{}, std::numeric_limits<double>::max()};
+  TsmResult min_path{{}, std::numeric_limits<double>::max()};
 
   const double Q = 320.0;
   const double fero_reduce = 0.6;
@@ -268,7 +260,6 @@ GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const 
   std::vector<std::vector<double>> fero(sz, std::vector<double>(sz, 0.2));
 
   for (int iter = 0; iter < MAX_ITERATIONS; ++iter) {
-
     std::vector<TsmResult> ants_path(sz, {std::vector<int>(sz + 1, 0), 0});
 
     for (int ant = 0; ant < sz; ++ant) {
@@ -289,8 +280,7 @@ GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const 
         double wish_sum = std::accumulate(wish.begin(), wish.end(), 0.0);
 
         std::vector<double> chance(sz);
-        for (int j = 0; j != sz; ++j)
-          chance[j] = wish[j] / wish_sum;
+        for (int j = 0; j != sz; ++j) chance[j] = wish[j] / wish_sum;
 
         int prev_point = curr_point;
         curr_point = Roulette(chance);
@@ -309,7 +299,6 @@ GraphAlgorithms::TsmResult GraphAlgorithms::SolveTravelingSalesmanProblem(const 
 
     if (min_path.distance > MinimalSolution(ants_path).distance)
       min_path = MinimalSolution(ants_path);
-
   }
 
   return min_path;
