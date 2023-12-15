@@ -88,7 +88,6 @@ void Console::Run() {
 
     if (choice != 0) {
       echo();
-      /* mvprintw(15, 0, "%d. %s\n", choice, choices[choice - 1].data()); */
       if (fl_wrsh_win) {
         wclear(fl_wrsh_win);
         wrefresh(fl_wrsh_win);
@@ -218,21 +217,16 @@ void Console::Run() {
       refresh();
     }
 
-    move(16, 0);
-    clrtoeol();
+    for (int i = 16; i != 19; ++i) {
+      move(i, 0);
+      clrtoeol();
+    }
 
-    move(17, 0);
-    clrtoeol();
+    if (choice == static_cast<int>(choices.size())) break;
 
-    move(18, 0);
-    clrtoeol();
-
-    if (choice ==
-        static_cast<int>(choices.size())) /* User did a choice come out of the
-                                             infinite loop */
-      break;
     choice = 0;
   }
+
   mvprintw(55, 0, "PRESS ANY KEY TO QUIT");
   refresh();
   getch();
