@@ -12,9 +12,11 @@ ALGO_OBJ = $(ALGO_DIR)/s21_graph_algorithms.o
 GCOV_TARGET = ./coverage
 COVERFLAGS = -fprofile-arcs -ftest-coverage
 
-all: clean test
+all: lib test
 
-test: s21_graph.a s21_graph_algorithms.a
+lib: s21_graph.a s21_graph_algorithms.a
+
+test: lib
 	@mkdir -p examples/dots/
 	@cmake -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" -S ./tests/ -B ./tests/build
 	@cmake --build ./tests/build
