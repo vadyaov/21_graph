@@ -44,7 +44,7 @@ $(ALGO_OBJ): $(ALGO_SRC)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 app: s21_graph.a s21_graph_algorithms.a
-	$(CXX) $(CXXFLAGS) console/*.cc $? -lncurses -o $@.out
+	$(CXX) $(CXXFLAGS) console/*.cc $? -lncursesw -ltinfo -o $@.out
 	./$@.out
 
 clean:

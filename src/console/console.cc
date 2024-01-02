@@ -1,6 +1,8 @@
 #include "console.h"
 
 #include <ncurses.h>
+#include <limits>
+#include <locale.h>
 
 void print_menu(WINDOW* menu_win, int highlight,
                 const std::vector<std::string>& choices) {
@@ -37,6 +39,8 @@ void Console::Run() {
   WINDOW* menu_win = nullptr;
   WINDOW* graph_win = nullptr;
   WINDOW* fl_wrsh_win = nullptr;
+
+  setlocale(LC_ALL, "");
 
   const std::vector<std::string> choices = {
       "Loading graph from .txt",
@@ -168,7 +172,10 @@ void Console::Run() {
             box(fl_wrsh_win, 0, 0);
             for (std::size_t i = 0, sz = res.size(); i != sz; ++i) {
               for (std::size_t j = 0; j != sz; ++j) {
-                mvwprintw(fl_wrsh_win, y, x, "%d", res[i][j]);
+                if (res[i][j] == std::numeric_limits<int>::max())
+                  mvwaddwstr(fl_wrsh_win, y, x, L"\u221E");
+                else
+                  mvwprintw(fl_wrsh_win, y, x, "%d", res[i][j]);
                 x += 4;
               }
               y++;
@@ -227,9 +234,6 @@ void Console::Run() {
     choice = 0;
   }
 
-  mvprintw(55, 0, "PRESS ANY KEY TO QUIT");
-  refresh();
-  getch();
   clrtoeol();
   endwin();
 }
